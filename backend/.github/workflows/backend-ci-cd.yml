@@ -1,0 +1,89 @@
+name: Backend CI/CD - CD
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  AWS_REGION: us-east-1
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  PRIVATE_SSH_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+  SERVER_PUBLIC_IP: ${{ secrets.AWS_PUBLIC_KEY }}
+  TOKEN_GITHUB: ${{ secrets.TOKEN_GITHUB }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Backup Backend
+      - name: Check if Backup Folder of BackEnd Exists and Delete to avoid Duplicates
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ env.SERVER_PUBLIC_IP }}
+          username: ubuntu
+          key: ${{ env.PRIVATE_SSH_KEY }}
+          script: |
+            DATE=$(date +%d_%m_%Y)
+            cd /home/ubuntu/YardSign_Pro_Backups/BackEnd_Backups
+            sudo rm -rf YardSign_BackEnd_$DATE
+
+      - name: Backup BackEnd
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ env.SERVER_PUBLIC_IP }}
+          username: ubuntu
+          key: ${{ env.PRIVATE_SSH_KEY }}
+          script: |
+            DATE=$(date +%d_%m_%Y)
+            sudo cp -r /home/ubuntu/YardSign_Pro/YardSign_BackEnd /home/ubuntu/YardSign_Pro_Backups/BackEnd_Backups/YardSign_BackEnd_$DATE
+
+      # Deploy Backend Code
+      - name: Update Backend Code on Server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ env.SERVER_PUBLIC_IP }}
+          username: ubuntu
+          key: ${{ env.PRIVATE_SSH_KEY }}
+          script: |
+            cd /home/ubuntu/YardSign_Pro/YardSign_BackEnd
+            git stash || echo "No local changes to stash"
+
+            git pull origin main --rebase || { 
+              echo "Failed to pull, resolving conflicts."; 
+              git stash pop; 
+              exit 1; 
+            }
+            source /home/ubuntu/venv/bin/activate
+            pip install -r requirements.txt
+            python manage.py migrate
+            sudo systemctl restart YardSign_Back_End.service
+
+      # Set Permissions and Media Folder
+      - name: Copy Media Folder and Set Permissions
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ env.SERVER_PUBLIC_IP }}
+          username: ubuntu
+          key: ${{ env.PRIVATE_SSH_KEY }}
+          script: |
+            DATE=$(date +%d_%m_%Y)
+            sudo cp -r /home/ubuntu/YardSign_Pro_Backups/BackEnd_Backups/YardSign_BackEnd_$DATE/media /home/ubuntu/YardSign_Pro/YardSign_BackEnd
+            sudo chmod -R 777 /home/ubuntu/YardSign_Pro/YardSign_BackEnd/media
+            sudo chmod 777 /home/ubuntu/YardSign_Pro/YardSign_BackEnd/accounts/migrations
+
+      # Restart Backend Service
+      - name: Restart Backend Service
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ env.SERVER_PUBLIC_IP }}
+          username: ubuntu
+          key: ${{ env.PRIVATE_SSH_KEY }}
+          script: |
+            sudo systemctl restart YardSign_BackEnd.service

@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; }
+        
+        body { 
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #f8fafc; margin: 0; min-height: 100vh; color: #334155; line-height: 1.5;
+        }
+        
+        .breadcrumbs { 
+            background: #0891b2; color: #fff; padding: 12px 20px; font-size: 14px;
+            border-bottom: 1px solid #0e7490;
+        }
+        .breadcrumbs a { color: #fff; text-decoration: none; font-weight: 500; opacity: 0.9; }
+        .breadcrumbs a:hover { opacity: 1; }
+        
+        .container { max-width: 1000px; margin: 0 auto; padding: 24px; }
+        
+        h1 { font-size: 28px; font-weight: 600; color: #1e293b; margin: 0 0 8px 0; }
+        .help { color: #64748b; margin-bottom: 24px; font-size: 15px; }
+        
+        /* Form Styling */
+        .form-container {
+            background: #fff; border: 1px solid #e2e8f0; border-radius: 8px;
+            padding: 24px; margin-bottom: 24px;
+        }
+        
+        .form-section {
+            margin-bottom: 32px;
+        }
+        
+        .form-section h3 {
+            font-size: 18px; font-weight: 600; color: #1e293b;
+            margin: 0 0 16px 0; padding-bottom: 8px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        
+        .form-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .form-group {
+            display: flex; flex-direction: column; gap: 6px;
+        }
+        
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+        
+        .form-group label {
+            font-size: 14px; font-weight: 500; color: #374151;
+        }
+        
+        .form-group label.required::after {
+            content: " *"; color: #dc2626; font-weight: 600;
+        }
+        
+        .form-group input, .form-group select, .form-group textarea {
+            padding: 10px 14px; border: 1px solid #d1d5db; border-radius: 6px;
+            font-size: 14px; font-family: 'Inter', sans-serif; background: #fff;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none; border-color: #0891b2; box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.1);
+        }
+        
+        .form-group textarea {
+            resize: vertical; min-height: 80px;
+        }
+        
+        .form-help {
+            font-size: 12px; color: #6b7280; font-style: italic;
+        }
+        
+        /* Company Info Display */
+        .current-info {
+            background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px;
+            padding: 16px; margin-bottom: 24px;
+        }
+        
+        .current-info h4 {
+            font-size: 16px; font-weight: 600; color: #1e293b; margin: 0 0 12px 0;
+        }
+        
+        .info-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 12px;
+        }
+        
+        .info-item {
+            display: flex; flex-direction: column; gap: 2px;
+        }
+        
+        .info-label {
+            font-size: 12px; font-weight: 500; color: #6b7280; text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .info-value {
+            font-size: 14px; color: #1e293b; font-weight: 500;
+        }
+        
+        .info-value.empty {
+            color: #9ca3af; font-style: italic;
+        }
+        
+        /* Buttons */
+        .button {
+            background: #0891b2; color: #fff; padding: 10px 20px; border-radius: 6px;
+            text-decoration: none; font-size: 14px; border: none; cursor: pointer;
+            display: inline-block; margin-right: 8px; margin-bottom: 8px; font-weight: 500;
+            font-family: 'Inter', sans-serif; transition: all 0.2s;
+        }
+        .button:hover { background: #0e7490; color: #fff; }
+        .button.primary { background: #059669; }
+        .button.primary:hover { background: #047857; }
+        .button.secondary { background: #6b7280; }
+        .button.secondary:hover { background: #4b5563; }
+        .button.danger { background: #dc2626; }
+        .button.danger:hover { background: #b91c1c; }
+        
+        .form-actions {
+            background: #fff; border: 1px solid #e2e8f0; border-radius: 8px;
+            padding: 20px; display: flex; justify-content: space-between; align-items: center;
+            flex-wrap: wrap; gap: 12px;
+        }
+        
+        .form-actions .primary-actions {
+            display: flex; gap: 12px; flex-wrap: wrap;
+        }
+        
+        .form-actions .secondary-actions {
+            display: flex; gap: 8px; flex-wrap: wrap;
+        }
+        
+        /* Status badges */
+        .status-badge {
+            padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 500;
+            color: white; display: inline-block; text-align: center;
+        }
+        .status-badge.registered { background: #059669; }
+        .status-badge.unregistered { background: #dc2626; }
+        
+        /* Map preview */
+        .map-preview {
+            background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 6px;
+            padding: 40px 20px; text-align: center; color: #64748b;
+            font-size: 14px; margin-top: 8px;
+        }
+        
+        /* Error handling */
+        .error-message {
+            background: #fef2f2; color: #991b1b; border: 1px solid #fecaca;
+            padding: 12px 16px; border-radius: 6px; margin-bottom: 16px;
+            font-size: 14px;
+        }
+        
+        .success-message {
+            background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0;
+            padding: 12px 16px; border-radius: 6px; margin-bottom: 16px;
+            font-size: 14px;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container { padding: 16px; }
+            h1 { font-size: 24px; }
+            .form-grid { grid-template-columns: 1fr; }
+            .info-grid { grid-template-columns: 1fr; }
+            .form-actions { flex-direction: column; align-items: stretch; }
+            .form-actions .primary-actions, .form-actions .secondary-actions {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Breadcrumbs -->
+    <div class="breadcrumbs">
+        <a href="/admin/">Home</a>
+        › <a href="/admin/accounts/">Accounts</a>
+        › <a href="/admin/accounts/companydata/">Company Data Management</a>
+        › Edit Company
+    </div>
+
+    <div class="container">
+        <!-- Header -->
+        <h1>{{ title }}</h1>
+        <p class="help">Edit company information and associated user details</p>
+
+        <!-- Current Information Display -->
+        <div class="current-info">
+            <h4>Current Company Information</h4>
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">Company Name</div>
+                    <div class="info-value">{{ company.company_name|default:"Not set" }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Sector</div>
+                    <div class="info-value">
+                        {% if company.sector_name %}
+                            {{ company.sector_name }}
+                        {% else %}
+                            <span class="empty">Not set</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Address</div>
+                    <div class="info-value">{{ company.address|default:"Not set" }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Status</div>
+                    <div class="info-value">
+                        {% if company.user.is_active %}
+                            <span class="status-badge registered">Registered</span>
+                        {% else %}
+                            <span class="status-badge unregistered">Unregistered</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">User Email</div>
+                    <div class="info-value">
+                        {% if company.user %}
+                            {{ company.user.email }}
+                        {% else %}
+                            <span class="empty">No user associated</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Coordinates</div>
+                    <div class="info-value">
+                        {% if company.latitude and company.longitude %}
+                            {{ company.latitude }}, {{ company.longitude }}
+                        {% else %}
+                            <span class="empty">Not geocoded</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Edit Form -->
+        <form method="post" class="form-container">
+            {% csrf_token %}
+            
+            <!-- Company Information Section -->
+            <div class="form-section">
+                <h3>Company Information</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="company_name" class="required">Company Name</label>
+                        <input type="text" id="company_name" name="company_name" 
+                               value="{{ company.company_name|default:'' }}" required>
+                        <div class="form-help">The official name of the company</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="sector">Sector</label>
+                        <select id="sector" name="sector">
+                            <option value="">Select a sector...</option>
+                            {% for sector in sectors %}
+                                <option value="{{ sector.id }}" 
+                                        {% if user_info and user_info.sector == sector.id|stringformat:"s" or company.sector_id == sector.id %}selected{% endif %}>
+                                    {{ sector.sector_name }} ({{ sector.category.category_name|default:"No Category" }})
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-help">The business sector/category</div>
+                    </div>
+                    
+                    <div class="form-group full-width">
+                        <label for="address" class="required">Address</label>
+                        <textarea id="address" name="address" required>{{ company.address|default:'' }}</textarea>
+                        <div class="form-help">The complete business address (will be geocoded for mapping)</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- User Information Section -->
+            {% if user_info %}
+            <div class="form-section">
+                <h3>User & Contact Information</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="contact_name">Contact Name</label>
+                        <input type="text" id="contact_name" name="contact_name" 
+                               value="{{ user_info.contact_name|default:'' }}">
+                        <div class="form-help">Primary contact person name</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="company_phone">Phone Number</label>
+                        <input type="tel" id="company_phone" name="company_phone" 
+                               value="{{ user_info.company_phone|default:'' }}">
+                        <div class="form-help">Business phone number</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="company_email">Company Email</label>
+                        <input type="email" id="company_email" name="company_email" 
+                               value="{{ user_info.company_email|default:'' }}">
+                        <div class="form-help">Official company email address</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="company_website">Website</label>
+                        <input type="text" id="company_website" name="company_website" 
+                               value="{{ user_info.company_website|default:'' }}" 
+                               placeholder="example.com or https://example.com">
+                        <div class="form-help">Company website URL (enter as-is, no validation applied)</div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="form-section">
+                <h3>User Information</h3>
+                <div style="background: #fef3c7; border: 1px solid #fcd34d; border-radius: 6px; padding: 16px;">
+                    <p style="margin: 0; color: #92400e; font-weight: 500;">
+                        No user information found for this company. 
+                        <a href="/admin/accounts/userinfo/add/?user={{ company.user.id }}" 
+                           style="color: #0891b2; text-decoration: none; font-weight: 600;">
+                            Create user information
+                        </a>
+                    </p>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Location Preview -->
+            <div class="form-section">
+                <h3>Location Information</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Current Coordinates</label>
+                        <div style="padding: 8px 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; color: #64748b;">
+                            {% if company.latitude and company.longitude %}
+                                Latitude: {{ company.latitude }}, Longitude: {{ company.longitude }}
+                            {% else %}
+                                Not geocoded yet
+                            {% endif %}
+                        </div>
+                        <div class="form-help">Coordinates are automatically updated when address changes</div>
+                    </div>
+                    <div class="form-group">
+                        <label>Map Preview</label>
+                        <div class="map-preview">
+                            {% if company.latitude and company.longitude %}
+                                Company location is mapped<br>
+                                <small>Lat: {{ company.latitude }}, Lng: {{ company.longitude }}</small>
+                            {% else %}
+                                Location will be mapped after address is geocoded
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+            <div class="primary-actions">
+                <button type="submit" form="editForm" class="button primary">
+                    Save Changes
+                </button>
+                <button type="button" class="button" onclick="previewChanges()">
+                    Preview Changes
+                </button>
+            </div>
+            
+            <div class="secondary-actions">
+                <a href="/admin/accounts/companydata/?view=companies" class="button secondary">
+                    Back to Companies
+                </a>
+                {% if user_info %}
+                    <a href="/admin/accounts/userinfo/{{ user_info.id }}/change/" class="button">
+                        Edit User Details
+                    </a>
+                {% endif %}
+                <button type="button" class="button danger" onclick="confirmDelete()">
+                    Delete Company
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Add form ID for proper submission
+        document.querySelector('form').id = 'editForm';
+        
+        function previewChanges() {
+            const form = document.getElementById('editForm');
+            const formData = new FormData(form);
+            
+            // Create preview popup or section
+            let preview = "Changes to be made:\n\n";
+            for (let [key, value] of formData.entries()) {
+                if (key !== 'csrfmiddlewaretoken') {
+                    preview += `${key}: ${value}\n`;
+                }
+            }
+            
+            alert(preview);
+        }
+        
+        function confirmDelete() {
+            const companyName = "{{ company.company_name|escapejs }}";
+            if (confirm(`Are you sure you want to delete company "${companyName}"? This action cannot be undone and will remove all associated data.`)) {
+                fetch(`/admin/accounts/companydata/company/{{ company.id }}/delete/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                        'Content-Type': 'application/json',
+                    },
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Company deleted successfully.');
+                        window.location.href = '/admin/accounts/companydata/?view=companies';
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    alert('Error deleting company: ' + error);
+                });
+            }
+        }
+        
+        // Auto-geocoding preview when address changes
+        let geocodeTimeout;
+        document.getElementById('address').addEventListener('input', function() {
+            clearTimeout(geocodeTimeout);
+            geocodeTimeout = setTimeout(() => {
+                const address = this.value.trim();
+                if (address) {
+                    // This would call a geocoding service in a real implementation
+                    console.log('Would geocode:', address);
+                }
+            }, 1000);
+        });
+        
+        // Form validation
+        document.getElementById('editForm').addEventListener('submit', function(e) {
+            const companyName = document.getElementById('company_name').value.trim();
+            const address = document.getElementById('address').value.trim();
+            
+            if (!companyName) {
+                alert('Company name is required.');
+                e.preventDefault();
+                return;
+            }
+            
+            if (!address) {
+                alert('Address is required.');
+                e.preventDefault();
+                return;
+            }
+            
+            // Show loading state
+            const submitBtn = document.querySelector('button[type="submit"]');
+            submitBtn.textContent = 'Saving...';
+            submitBtn.disabled = true;
+        });
+    </script>
+</body>
+</html>

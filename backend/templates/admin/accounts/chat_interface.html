@@ -1,0 +1,2175 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>YardSign Scraper - Sessions & Sectors</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <!doctype html>
+    <html lang="en">
+      <head>
+        <meta charset="UTF-8" />
+        <title>YardSign Scraper - Sessions & Sectors</title>
+        <link
+          href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap"
+          rel="stylesheet"
+        />
+        <style>
+          * {
+            box-sizing: border-box;
+          }
+          body {
+            font-family: "Poppins", sans-serif;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            height: 100vh;
+            margin: 0;
+            display: flex;
+            color: #fff;
+          }
+          .sidebar {
+            width: 300px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 16px;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+          }
+          .sidebar-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+          }
+          .sidebar h3 {
+            margin: 0;
+            font-size: 18px;
+          }
+
+          /* Toggle Switch Styles - revamped (segmented control) */
+          .toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+          }
+
+          .toggle-switch {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 150px;
+            height: 29px;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.12);
+            padding: 3px;
+            position: relative;
+            cursor: pointer;
+            user-select: none;
+          }
+
+          .toggle-slider {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: calc(50% - 6px);
+            height: calc(100% - 6px);
+            border-radius: 14px;
+            background: linear-gradient(45deg, #ff6a00, #ee0979);
+            z-index: 1;
+            transition: transform 0.25s ease;
+            transform: translateX(0);
+          }
+
+          /* when sectors selected, slide to right */
+          .toggle-switch.sectors .toggle-slider {
+            transform: translateX(100%);
+          }
+
+          .toggle-option {
+            flex: 1;
+            z-index: 2; /* above the slider */
+            text-align: center;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 6px 8px;
+            border-radius: 12px;
+            background: transparent;
+            color: #fff;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            transition: color 0.18s ease;
+          }
+
+          .toggle-option:focus {
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.06);
+          }
+
+          .toggle-option.active {
+            color: #0f1724; /* darker text when above slider */
+          }
+
+          .pointer-anim {
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 3;
+          }
+
+          .pointer-anim svg {
+            width: 22px;
+            height: 22px;
+            fill: white;
+            transform-origin: 50% 50%;
+            animation: wave 1.4s infinite ease-in-out;
+          }
+
+          @keyframes wave {
+            0% {
+              transform: translateY(0) rotate(0deg);
+            }
+            40% {
+              transform: translateY(-6px) rotate(-8deg);
+            }
+            70% {
+              transform: translateY(-3px) rotate(6deg);
+            }
+            100% {
+              transform: translateY(0) rotate(0deg);
+            }
+          }
+
+          .new-session-btn {
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.15);
+            border: none;
+            color: #fff;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+          }
+          .new-session-btn:hover {
+            transform: scale(1.03);
+          }
+          .search-wrap {
+            position: relative;
+          }
+          .search-wrap input {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 10px;
+            border: none;
+            outline: none;
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+          }
+          .history {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            overflow-y: auto;
+            flex: 1;
+          }
+          .history li {
+            background: rgba(255, 255, 255, 0.12);
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            font-size: 14px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            display: grid;
+            gap: 6px;
+          }
+          .history li.active {
+            border-color: rgba(255, 255, 255, 0.6);
+            background: rgba(255, 255, 255, 0.18);
+          }
+          .session-title {
+            font-weight: 600;
+          }
+          .session-meta {
+            font-size: 12px;
+            opacity: 0.85;
+          }
+          .session-actions {
+            display: flex;
+            gap: 6px;
+          }
+          .chip {
+            padding: 4px 8px;
+            font-size: 12px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.18);
+          }
+          .action-btn {
+            background: rgba(255, 255, 255, 0.16);
+            border: none;
+            color: #fff;
+            border-radius: 8px;
+            padding: 6px 8px;
+            cursor: pointer;
+            font-size: 12px;
+          }
+
+          /* Sector specific styles */
+          .sector-item {
+            background: rgba(255, 255, 255, 0.12);
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: all 0.2s ease;
+            position: relative;
+          }
+
+          .sector-item:hover {
+            background: rgba(255, 255, 255, 0.18);
+            border-color: rgba(255, 255, 255, 0.3);
+          }
+
+          .sector-item.selected {
+            border-color: rgba(255, 255, 255, 0.6);
+            background: rgba(255, 255, 255, 0.2);
+          }
+
+          .sector-name {
+            font-weight: 600;
+            font-size: 14px;
+          }
+
+          .sector-category {
+            font-size: 12px;
+            opacity: 0.85;
+            margin-top: 4px;
+          }
+
+          .sector-actions {
+            display: flex;
+            gap: 6px;
+            margin-top: 8px;
+          }
+
+          .history-btn {
+            background: rgba(255, 255, 255, 0.16);
+            border: none;
+            color: #fff;
+            border-radius: 6px;
+            padding: 4px 8px;
+            cursor: pointer;
+            font-size: 11px;
+          }
+
+          .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            gap: 12px;
+          }
+          .chat-window {
+            flex: 1;
+            overflow-y: auto;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+          }
+          .msg {
+            margin: 0 0 12px;
+            line-height: 1.5;
+            white-space: pre-wrap;
+          }
+          .msg strong {
+            font-weight: 600;
+          }
+          .system-banner {
+            background: rgba(255, 255, 255, 0.14);
+            padding: 10px 12px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+          }
+
+          /* Warning Banner Styles */
+          .warning-banner {
+            background: rgba(255, 152, 0, 0.2);
+            border: 1px solid rgba(255, 152, 0, 0.5);
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 10px;
+            display: none;
+            text-align: center;
+            color: #fff;
+          }
+
+          .warning-banner.active {
+            display: block;
+          }
+
+          .input-area {
+            display: flex;
+            gap: 10px;
+            position: relative;
+          }
+
+          /* Input area disabled overlay */
+          .input-area::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            display: none;
+            z-index: 10;
+          }
+
+          .input-area.disabled::after {
+            display: block;
+          }
+
+          textarea {
+            flex: 1;
+            padding: 12px;
+            border-radius: 10px;
+            border: none;
+            font-size: 16px;
+            font-family: "Poppins", sans-serif;
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            resize: none;
+            height: 60px;
+          }
+
+          textarea:disabled {
+            background: rgba(255, 255, 255, 0.5);
+            color: #666;
+            cursor: not-allowed;
+          }
+
+          button {
+            padding: 14px 20px;
+            background: linear-gradient(90deg, #ff6a00, #ee0979);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+          }
+          button:hover {
+            background: linear-gradient(90deg, #ee0979, #ff6a00);
+            transform: scale(1.05);
+          }
+          button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            background: rgba(255, 255, 255, 0.3);
+          }
+
+          .loader {
+            display: none;
+            text-align: center;
+            margin-top: 10px;
+            width: 100%;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+          }
+          .loader img {
+            width: 40px;
+          }
+
+          .download-section {
+            display: none;
+            text-align: center;
+            margin-top: 6px;
+            width: 100%;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+          }
+          .download-section a button {
+            background: linear-gradient(90deg, #00b09b, #96c93d);
+          }
+          .download-section a button:hover {
+            background: linear-gradient(90deg, #96c93d, #00b09b);
+          }
+
+          .footer-row {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+          }
+          .status-text {
+            font-size: 12px;
+            opacity: 0.85;
+            align-self: flex-start;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+          }
+
+          .system-banner {
+            position: relative;
+          }
+
+          .hidden {
+            display: none !important;
+          }
+
+          /* Progress bar styles */
+          .progress-container {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            margin: 10px 0;
+            overflow: hidden;
+          }
+
+          .progress-bar {
+            height: 20px;
+            background: linear-gradient(90deg, #ff6a00, #ee0979);
+            border-radius: 10px;
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 500;
+            color: white;
+          }
+
+          /* History modal styles */
+          .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+          }
+
+          .modal-content {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            margin: 5% auto;
+            padding: 20px;
+            border-radius: 15px;
+            width: 80%;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+            color: white;
+          }
+
+          .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding-bottom: 10px;
+          }
+
+          .close-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            margin: 0;
+          }
+
+          .history-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+          }
+
+          .history-item h4 {
+            margin: 0 0 10px 0;
+            color: #fff;
+          }
+
+          .history-meta {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-bottom: 8px;
+          }
+
+          .status-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+          }
+
+          .status-completed {
+            background: rgba(76, 175, 80, 0.3);
+            color: #1e4517;
+          }
+
+          .status-failed {
+            background: rgba(244, 67, 54, 0.3);
+            color: #f44336;
+          }
+
+          .status-running {
+            background: rgba(255, 152, 0, 0.3);
+            color: #ff9800;
+          }
+
+          .status-pending {
+            background: rgba(33, 150, 243, 0.3);
+            color: #2196f3;
+          }
+
+          /* Task status indicator */
+          .task-status-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 152, 0, 0.9);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 1001;
+            animation: pulse 2s infinite;
+          }
+
+          .task-status-indicator.active {
+            display: block;
+          }
+
+          @keyframes pulse {
+            0% {
+              opacity: 0.8;
+            }
+            50% {
+              opacity: 1;
+            }
+            100% {
+              opacity: 0.8;
+            }
+          }
+        </style>
+      </head>
+      <body>
+        <input type="hidden" id="csrfToken" value="{{ csrf_token }}" />
+
+        <!-- Task Status Indicator -->
+        <div id="taskStatusIndicator" class="task-status-indicator">
+          <div id="taskStatusText">Scraping in progress...</div>
+        </div>
+
+        <aside class="sidebar">
+          <div class="sidebar-header">
+            <h3 id="sidebarTitle">Sessions</h3>
+            <button
+              class="new-session-btn"
+              id="newSessionBtn"
+              title="Start new session"
+            >
+              + New
+            </button>
+          </div>
+
+          <!-- Toggle Switch -->
+          <div class="toggle-container">
+            <div class="toggle-switch" id="toggleSwitch">
+              <div class="toggle-slider">Sessions</div>
+              <div class="toggle-labels">
+                <span>Sessions</span>
+                <span>Sectors</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="search-wrap">
+            <input id="searchInput" type="text" placeholder="Search..." />
+          </div>
+
+          <!-- Sessions List -->
+          <ul class="history" id="sessionList"></ul>
+
+          <!-- Sectors List -->
+          <div class="history hidden" id="sectorList"></div>
+        </aside>
+
+        <main class="main">
+          <div class="system-banner" id="banner">
+            <div>
+              <strong>YardSign Scraper</strong> – AI-Powered Data Scraping
+              Assistant
+            </div>
+            <div class="status-text" id="connectionStatus">Initializing…</div>
+          </div>
+
+          <!-- Warning Banner -->
+          <div class="warning-banner" id="warningBanner">
+            <strong>Scraping in progress!</strong> Please wait for the current
+            task to complete before starting a new one.
+          </div>
+
+          <div class="chat-window" id="chatWindow">
+            <p class="msg">
+              <strong>System:</strong> Welcome! Start a new session or continue
+              an existing one from the left.
+            </p>
+            <p class="msg">
+              Enter the Geodaka known Home Services Company Sector Type or AEC
+              Type to scrape.
+            </p>
+          </div>
+
+          <div class="input-area" id="inputArea">
+            <textarea
+              id="promptInput"
+              placeholder="Enter your prompt"
+            ></textarea>
+            <button id="submitBtn" disabled>Send</button>
+          </div>
+
+          <div class="footer-row">
+            <div class="loader" id="loader">
+              <img src="https://i.gifer.com/ZZ5H.gif" alt="Loading..." />
+              <p id="loaderText">Scraping in progress...</p>
+              <div
+                class="progress-container"
+                id="progressContainer"
+                style="display: none"
+              >
+                <div class="progress-bar" id="progressBar" style="width: 0%">
+                  0%
+                </div>
+              </div>
+            </div>
+            <div class="download-section" id="downloadSection">
+              <a id="downloadLink" href="#" download="results.csv">
+                <button>Download CSV</button>
+              </a>
+              <button id="uploadToAdminBtn" style="display: none">
+                Upload to Admin
+              </button>
+            </div>
+          </div>
+        </main>
+
+        <!-- History Modal -->
+        <div id="historyModal" class="modal">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h3 id="modalTitle">Sector History</h3>
+              <button class="close-btn" id="closeModalBtn">&times;</button>
+            </div>
+            <div id="historyContent">
+              <!-- History items will be populated here -->
+            </div>
+          </div>
+        </div>
+
+        <script>
+          // --- WebSocket state ---
+          let ws = null;
+          let inactivityTimeout = null;
+          const INACTIVITY_LIMIT = 10 * 60 * 1000; // 10 minutes
+          let currentTaskId = null;
+          let taskStatusInterval = null;
+
+          // --- Task checking state ---
+          let activeTaskCheckInterval = null;
+          let isTaskInProgress = false;
+          let currentActiveTask = null;
+
+          // --- Session state ---
+          let sessions = {};
+          let activeSessionId = null;
+
+          // --- Sector state ---
+          let sectors = [];
+          let selectedSectorId = null;
+          let currentMode = "sessions"; // 'sessions' or 'sectors'
+
+          // --- Sector workflow state ---
+          let sectorWorkflowState = null; // null, 'selecting_option', 'entering_count', 'entering_location', 'entering_count_and_location'
+          let workflowData = {}; // Store sector, count, location data
+          let currentCsvUrl = null; // Store current CSV URL for manual upload
+
+          // --- DOM refs ---
+          const chatWindow = document.getElementById("chatWindow");
+          const sessionList = document.getElementById("sessionList");
+          const sectorList = document.getElementById("sectorList");
+          const submitBtn = document.getElementById("submitBtn");
+          const promptInput = document.getElementById("promptInput");
+          const inputArea = document.getElementById("inputArea");
+          const warningBanner = document.getElementById("warningBanner");
+          const taskStatusIndicator = document.getElementById(
+            "taskStatusIndicator",
+          );
+          const taskStatusText = document.getElementById("taskStatusText");
+          const loader = document.getElementById("loader");
+          const loaderText = document.getElementById("loaderText");
+          const progressContainer =
+            document.getElementById("progressContainer");
+          const progressBar = document.getElementById("progressBar");
+          const downloadSection = document.getElementById("downloadSection");
+          const downloadLink = document.getElementById("downloadLink");
+          const uploadToAdminBtn = document.getElementById("uploadToAdminBtn");
+          const statusText = document.getElementById("connectionStatus");
+          const newSessionBtn = document.getElementById("newSessionBtn");
+          const searchInput = document.getElementById("searchInput");
+          const toggleSwitch = document.getElementById("toggleSwitch");
+          const sidebarTitle = document.getElementById("sidebarTitle");
+          const historyModal = document.getElementById("historyModal");
+          const modalTitle = document.getElementById("modalTitle");
+          const historyContent = document.getElementById("historyContent");
+          const closeModalBtn = document.getElementById("closeModalBtn");
+
+          // === Task Status Management Functions ===
+          async function checkForActiveTask() {
+            try {
+              const activeTaskId = localStorage.getItem(
+                "current_scraping_task_id",
+              );
+              if (!activeTaskId) {
+                if (isTaskInProgress) {
+                  setTaskInProgressState(false);
+                }
+                return false;
+              }
+
+              const response = await apiRequest(
+                "/api/get-task-status/",
+                "POST",
+                { task_id: activeTaskId },
+              );
+
+              if (
+                response.success &&
+                (response.status === "pending" || response.status === "running")
+              ) {
+                currentActiveTask = response;
+                setTaskInProgressState(true, response);
+                return true;
+              } else {
+                localStorage.removeItem("current_scraping_task_id");
+                if (isTaskInProgress) {
+                  setTaskInProgressState(false);
+                }
+                return false;
+              }
+            } catch (error) {
+              console.error("Failed to check for active tasks:", error);
+              return false;
+            }
+          }
+
+          function setTaskInProgressState(inProgress, task = null) {
+            isTaskInProgress = inProgress;
+
+            if (inProgress) {
+              // Disable input controls
+              submitBtn.disabled = true;
+              promptInput.disabled = true;
+              inputArea.classList.add("disabled");
+              warningBanner.classList.add("active");
+              taskStatusIndicator.classList.add("active");
+
+              // Update status text
+              if (task) {
+                taskStatusText.textContent = `Scraping "${task.service}" in progress...`;
+                currentTaskId = task.task_id;
+
+                // Start monitoring this task
+                if (!taskStatusInterval) {
+                  startTaskStatusPolling(task.task_id);
+                }
+              }
+            } else {
+              // Enable input controls
+              if (ws && ws.readyState === WebSocket.OPEN) {
+                submitBtn.disabled = false;
+              }
+              promptInput.disabled = false;
+              inputArea.classList.remove("disabled");
+              warningBanner.classList.remove("active");
+              taskStatusIndicator.classList.remove("active");
+
+              // Clear task monitoring
+              if (taskStatusInterval) {
+                clearInterval(taskStatusInterval);
+                taskStatusInterval = null;
+              }
+              currentTaskId = null;
+              currentActiveTask = null;
+            }
+          }
+
+          function startActiveTaskMonitoring() {
+            if (activeTaskCheckInterval) {
+              clearInterval(activeTaskCheckInterval);
+            }
+
+            // Check immediately
+            checkForActiveTask();
+
+            // Then check every 5 seconds
+            activeTaskCheckInterval = setInterval(checkForActiveTask, 5000);
+          }
+
+          function stopActiveTaskMonitoring() {
+            if (activeTaskCheckInterval) {
+              clearInterval(activeTaskCheckInterval);
+              activeTaskCheckInterval = null;
+            }
+          }
+
+          function showTaskInProgressAlert() {
+            if (isTaskInProgress && currentActiveTask) {
+              alert(
+                `Scraping is in progress for "${currentActiveTask.service}". Please wait for it to finish before starting a new task.`,
+              );
+            } else {
+              alert(
+                "Scraping is in progress. Please wait for it to finish before starting a new task.",
+              );
+            }
+          }
+
+          // === API Functions ===
+          const API_BASE = "/api/chat";
+
+          function getCsrfToken() {
+            const csrfToken = document.getElementById("csrfToken");
+            return csrfToken ? csrfToken.value : "";
+          }
+
+          async function apiRequest(url, options = {}) {
+            const defaultOptions = {
+              headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCsrfToken(),
+              },
+              credentials: "include",
+            };
+
+            const response = await fetch(url, {
+              ...defaultOptions,
+              ...options,
+            });
+            if (!response.ok) {
+              throw new Error(`API request failed: ${response.status}`);
+            }
+            return response.json();
+          }
+
+          // === Task Status Functions ===
+          async function checkTaskStatus(taskId) {
+            try {
+              const response = await apiRequest("/api/get-task-status/", {
+                method: "POST",
+                body: JSON.stringify({ task_id: taskId }),
+              });
+
+              return response;
+            } catch (error) {
+              console.error("Failed to get task status:", error);
+              return null;
+            }
+          }
+
+          function startTaskStatusPolling(taskId) {
+            if (taskStatusInterval) {
+              clearInterval(taskStatusInterval);
+            }
+
+            taskStatusInterval = setInterval(async () => {
+              const status = await checkTaskStatus(taskId);
+              if (status && status.success) {
+                updateProgressDisplay(status);
+
+                if (
+                  status.status === "completed" ||
+                  status.status === "failed"
+                ) {
+                  clearInterval(taskStatusInterval);
+                  taskStatusInterval = null;
+                  currentTaskId = null;
+
+                  // Re-enable controls
+                  setTaskInProgressState(false);
+                }
+              }
+            }, 2000); // Poll every 2 seconds
+          }
+
+          function updateProgressDisplay(status) {
+            if (status.progress) {
+              const { processed_towns, total_towns, found_results } =
+                status.progress;
+              const percentage = Math.round(
+                (processed_towns / total_towns) * 100,
+              );
+
+              progressContainer.style.display = "block";
+              progressBar.style.width = `${percentage}%`;
+              progressBar.textContent = `${percentage}%`;
+
+              loaderText.textContent = `Processing towns: ${processed_towns}/${total_towns} | Found: ${found_results} results`;
+
+              // Update task status indicator
+              if (taskStatusIndicator.classList.contains("active")) {
+                taskStatusText.textContent = `Scraping: ${percentage}% complete (${found_results} results)`;
+              }
+            }
+          }
+
+          // === Sector Functions ===
+          async function loadSectors() {
+            try {
+              const response = await apiRequest("/api/sectors/");
+              sectors = response.sectors || [];
+              renderSectors();
+            } catch (error) {
+              console.error("Failed to load sectors:", error);
+              sectors = [];
+            }
+          }
+
+          function renderSectors(filterText = "") {
+            sectorList.innerHTML = "";
+            const filteredSectors = sectors.filter(
+              (sector) =>
+                sector.sector_name
+                  .toLowerCase()
+                  .includes(filterText.toLowerCase()) ||
+                sector.category
+                  .toLowerCase()
+                  .includes(filterText.toLowerCase()),
+            );
+
+            if (!filteredSectors.length) {
+              const empty = document.createElement("div");
+              empty.style.opacity = "0.9";
+              empty.innerHTML = "<em>No sectors found.</em>";
+              sectorList.appendChild(empty);
+              return;
+            }
+
+            for (const sector of filteredSectors) {
+              const div = document.createElement("div");
+              div.className = "sector-item";
+              if (sector.id === selectedSectorId) div.classList.add("selected");
+
+              const name = document.createElement("div");
+              name.className = "sector-name";
+              name.textContent = sector.sector_name;
+
+              const category = document.createElement("div");
+              category.className = "sector-category";
+              category.textContent = `Category: ${sector.category}`;
+
+              const actions = document.createElement("div");
+              actions.className = "sector-actions";
+
+              const historyBtn = document.createElement("button");
+              historyBtn.className = "history-btn";
+              historyBtn.textContent = "History";
+              historyBtn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                showSectorHistory(sector);
+              });
+
+              actions.appendChild(historyBtn);
+
+              div.appendChild(name);
+              div.appendChild(category);
+              div.appendChild(actions);
+
+              div.addEventListener("click", () => {
+                if (isTaskInProgress) {
+                  showTaskInProgressAlert();
+                  return;
+                }
+
+                selectedSectorId = sector.id;
+                renderSectors(searchInput.value.trim());
+                startSectorWorkflow(sector);
+              });
+
+              sectorList.appendChild(div);
+            }
+          }
+
+          async function showSectorHistory(sector) {
+            try {
+              const response = await apiRequest("/api/get-sector-history/", {
+                method: "POST",
+                body: JSON.stringify({ sector_id: sector.id }),
+              });
+
+              modalTitle.textContent = `${sector.sector_name} - Scraping History`;
+              historyContent.innerHTML = "";
+
+              if (response.success && response.history.length > 0) {
+                for (const historyItem of response.history) {
+                  const div = document.createElement("div");
+                  div.className = "history-item";
+
+                  div.innerHTML = `
+                <h4>Task: ${historyItem.service || "N/A"}</h4>
+                <div class="history-meta">
+                  <span class="status-badge status-${historyItem.status}">${
+                    historyItem.status
+                  }</span>
+                  <span>Results: ${historyItem.results_count}</span>
+                  <span>Created: ${new Date(
+                    historyItem.created_at,
+                  ).toLocaleString()}</span>
+                  ${
+                    historyItem.completed_at
+                      ? `<span>Completed: ${new Date(
+                          historyItem.completed_at,
+                        ).toLocaleString()}</span>`
+                      : ""
+                  }
+                </div>
+                ${
+                  historyItem.locations && historyItem.locations.length > 0
+                    ? `<div>Locations: ${historyItem.locations.join(
+                        ", ",
+                      )}</div>`
+                    : "<div>All towns</div>"
+                }
+                ${
+                  historyItem.count
+                    ? `<div>Count: ${historyItem.count}</div>`
+                    : ""
+                }
+                ${
+                  historyItem.csv_url
+                    ? `<div style="margin-top: 10px;">
+                    <a href="${historyItem.csv_url}" download style="color: #0d0c0c;">Download CSV</a>
+                  </div>`
+                    : ""
+                }
+              `;
+
+                  historyContent.appendChild(div);
+                }
+              } else {
+                historyContent.innerHTML =
+                  '<div style="text-align: center; opacity: 0.7;">No history found for this sector.</div>';
+              }
+
+              historyModal.style.display = "block";
+            } catch (error) {
+              console.error("Failed to load sector history:", error);
+              addSystemMessage("Failed to load sector history.");
+            }
+          }
+
+          function startSectorWorkflow(sector) {
+            if (isTaskInProgress) {
+              showTaskInProgressAlert();
+              return;
+            }
+
+            workflowData = { sector: sector };
+            sectorWorkflowState = "selecting_option";
+
+            chatWindow.innerHTML = "";
+
+            const welcomeMsg = document.createElement("p");
+            welcomeMsg.className = "msg";
+            welcomeMsg.innerHTML = `<strong>System:</strong> You selected "${sector.sector_name}". Please choose an option:`;
+            chatWindow.appendChild(welcomeMsg);
+
+            const buttonContainer = document.createElement("div");
+            buttonContainer.className = "button-selection";
+
+            const options = [
+              { text: "Scrape all towns", value: "all_towns" },
+              { text: "Specify a number", value: "specify_number" },
+              { text: "Specify a location", value: "specify_location" },
+              {
+                text: "Specify a number and a location",
+                value: "specify_both",
+              },
+            ];
+
+            for (const option of options) {
+              const btn = document.createElement("button");
+              btn.className = "option-btn";
+              btn.textContent = option.text;
+              btn.addEventListener("click", () => {
+                if (isTaskInProgress) {
+                  showTaskInProgressAlert();
+                  return;
+                }
+                handleSectorOption(option.value);
+              });
+              buttonContainer.appendChild(btn);
+            }
+
+            chatWindow.appendChild(buttonContainer);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+          }
+
+          function handleSectorOption(option) {
+            if (isTaskInProgress) {
+              showTaskInProgressAlert();
+              return;
+            }
+
+            workflowData.option = option;
+
+            // Add user selection to chat
+            addSystemMessage(`You selected: "${getOptionText(option)}"`);
+
+            switch (option) {
+              case "all_towns":
+                executeSectorScraping();
+                break;
+              case "specify_number":
+                sectorWorkflowState = "entering_count";
+                promptForInput("Enter the number of companies you want:");
+                break;
+              case "specify_location":
+                sectorWorkflowState = "entering_location";
+                promptForInput("Enter the location:");
+                break;
+              case "specify_both":
+                sectorWorkflowState = "entering_count";
+                promptForInput("Enter the number of companies you want:");
+                break;
+            }
+          }
+
+          function getOptionText(option) {
+            const optionTexts = {
+              all_towns: "Scrape all towns",
+              specify_number: "Specify a number",
+              specify_location: "Specify a location",
+              specify_both: "Specify a number and a location",
+            };
+            return optionTexts[option];
+          }
+
+          function promptForInput(message) {
+            addSystemMessage(message);
+            if (!isTaskInProgress) {
+              promptInput.focus();
+              submitBtn.disabled = false;
+            }
+          }
+
+          function addSystemMessage(message) {
+            const msg = document.createElement("p");
+            msg.className = "msg";
+            msg.innerHTML = `<strong>System:</strong> ${message}`;
+            chatWindow.appendChild(msg);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+          }
+
+          function handleSectorWorkflowInput(input) {
+            if (isTaskInProgress) {
+              showTaskInProgressAlert();
+              return;
+            }
+
+            switch (sectorWorkflowState) {
+              case "entering_count":
+                workflowData.count = parseInt(input);
+                addUserMessage(input);
+
+                if (workflowData.option === "specify_both") {
+                  sectorWorkflowState = "entering_location";
+                  promptForInput("Enter a location:");
+                } else {
+                  executeSectorScraping();
+                }
+                break;
+
+              case "entering_location":
+                workflowData.location = input;
+                addUserMessage(input);
+                executeSectorScraping();
+                break;
+            }
+          }
+
+          function addUserMessage(content) {
+            const msg = document.createElement("p");
+            msg.className = "msg";
+            msg.innerHTML = `<strong>You:</strong> ${content}`;
+            chatWindow.appendChild(msg);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+          }
+
+          function executeSectorScraping() {
+            if (isTaskInProgress) {
+              showTaskInProgressAlert();
+              return;
+            }
+
+            let prompt = `I want ${workflowData.sector.sector_name} service providers`;
+
+            if (workflowData.count) {
+              prompt = `I want ${workflowData.count} ${workflowData.sector.sector_name} service providers`;
+            }
+
+            if (workflowData.location) {
+              if (workflowData.count) {
+                prompt = `I want ${workflowData.count} ${workflowData.sector.sector_name} service providers in ${workflowData.location}`;
+              } else {
+                prompt = `I want ${workflowData.sector.sector_name} service providers in ${workflowData.location}`;
+              }
+            }
+
+            // Add the prompt to chat as user message
+            addUserMessage(prompt);
+
+            // Create the message with sector_id for backend
+            const messageWithSector = JSON.stringify({
+              sector_id: workflowData.sector.id,
+              prompt: prompt,
+            });
+
+            // Send to WebSocket for scraping
+            sendToWebSocket(messageWithSector, true); // true indicates this is for CSV upload
+
+            // Reset workflow state
+            sectorWorkflowState = null;
+          }
+
+          // === Session Functions ===
+          async function loadSessions() {
+            try {
+              const data = await apiRequest(`${API_BASE}/sessions/`);
+              sessions = {};
+
+              for (const session of data.sessions) {
+                sessions[session.id] = {
+                  id: session.id,
+                  title: session.title,
+                  createdAt: session.createdAt,
+                  updatedAt: session.updatedAt,
+                  messages: [],
+                  messageCount: session.messageCount,
+                };
+
+                if (session.isActive) {
+                  activeSessionId = session.id;
+                }
+              }
+
+              renderSessions();
+              if (activeSessionId) {
+                await loadSessionMessages(activeSessionId);
+                renderChatWindow(activeSessionId);
+              }
+            } catch (error) {
+              console.error("Failed to load sessions:", error);
+              sessions = {};
+              activeSessionId = null;
+            }
+          }
+
+          async function loadSessionMessages(sessionId) {
+            try {
+              const data = await apiRequest(
+                `${API_BASE}/sessions/${sessionId}/messages/`,
+              );
+              if (sessions[sessionId]) {
+                sessions[sessionId].messages = data.messages.map((msg) => ({
+                  role: msg.role,
+                  content: msg.content,
+                  ts: msg.timestamp,
+                }));
+              }
+            } catch (error) {
+              console.error("Failed to load session messages:", error);
+              if (sessions[sessionId]) {
+                sessions[sessionId].messages = [];
+              }
+            }
+          }
+
+          async function saveSession(session) {
+            try {
+              await apiRequest(`${API_BASE}/sessions/`, {
+                method: "POST",
+                body: JSON.stringify({
+                  sessionId: session.id,
+                  title: session.title,
+                }),
+              });
+            } catch (error) {
+              console.error("Failed to save session:", error);
+            }
+          }
+
+          async function updateSession(sessionId, action, data = {}) {
+            try {
+              await apiRequest(`${API_BASE}/sessions/`, {
+                method: "PUT",
+                body: JSON.stringify({
+                  sessionId: sessionId,
+                  action: action,
+                  ...data,
+                }),
+              });
+            } catch (error) {
+              console.error("Failed to update session:", error);
+            }
+          }
+
+          async function deleteSessionAPI(sessionId) {
+            try {
+              await apiRequest(`${API_BASE}/sessions/`, {
+                method: "DELETE",
+                body: JSON.stringify({
+                  sessionId: sessionId,
+                }),
+              });
+            } catch (error) {
+              console.error("Failed to delete session:", error);
+            }
+          }
+
+          async function saveMessage(sessionId, role, content) {
+            try {
+              const response = await apiRequest(
+                `${API_BASE}/sessions/${sessionId}/messages/`,
+                {
+                  method: "POST",
+                  body: JSON.stringify({
+                    role: role,
+                    content: content,
+                  }),
+                },
+              );
+
+              if (response.sessionUpdated) {
+                updateSessionTitleInSidebar(
+                  sessionId,
+                  response.sessionUpdated.title,
+                );
+                if (sessions[sessionId]) {
+                  sessions[sessionId].title = response.sessionUpdated.title;
+                  sessions[sessionId].updatedAt =
+                    response.sessionUpdated.updatedAt;
+                }
+              }
+
+              return response;
+            } catch (error) {
+              console.error("Failed to save message:", error);
+            }
+          }
+
+          function updateSessionTitleInSidebar(sessionId, newTitle) {
+            const sessionElement = document.querySelector(
+              `[data-session-id="${sessionId}"] .session-title`,
+            );
+            if (sessionElement) {
+              sessionElement.textContent = newTitle;
+            } else {
+              renderSessions(searchInput.value.trim());
+            }
+          }
+
+          // === Utility ===
+          function nowIso() {
+            return new Date().toISOString();
+          }
+          function shortDate(iso) {
+            try {
+              return new Date(iso).toLocaleString();
+            } catch {
+              return iso || "";
+            }
+          }
+          function makeTitleFrom(text) {
+            const clean = text.trim().replace(/\s+/g, " ");
+            return clean.length > 32
+              ? clean.slice(0, 32) + "…"
+              : clean || "New session";
+          }
+
+          async function ensureActiveSession() {
+            if (activeSessionId && sessions[activeSessionId])
+              return activeSessionId;
+            const ids = Object.keys(sessions);
+            if (ids.length) {
+              ids.sort(
+                (a, b) =>
+                  new Date(sessions[b].updatedAt) -
+                  new Date(sessions[a].updatedAt),
+              );
+              activeSessionId = ids[0];
+              await updateSession(activeSessionId, "activate");
+            } else {
+              activeSessionId = await createNewSession("New session");
+            }
+            return activeSessionId;
+          }
+
+          async function createNewSession(initialTitleText) {
+            if (isTaskInProgress) {
+              showTaskInProgressAlert();
+              return null;
+            }
+
+            const id = Date.now().toString();
+            const ts = nowIso();
+            const session = {
+              id,
+              title: makeTitleFrom(initialTitleText || "New session"),
+              createdAt: ts,
+              updatedAt: ts,
+              messages: [],
+            };
+
+            sessions[id] = session;
+            activeSessionId = id;
+
+            await saveSession(session);
+
+            renderSessions();
+            renderChatWindow(id);
+            return id;
+          }
+
+          async function renameSession(id, newTitle) {
+            if (!sessions[id]) return;
+            const newTitleProcessed = makeTitleFrom(newTitle);
+            sessions[id].title = newTitleProcessed;
+            sessions[id].updatedAt = nowIso();
+
+            await updateSession(id, "rename", { title: newTitleProcessed });
+
+            renderSessions();
+          }
+
+          async function deleteSession(id) {
+            if (!sessions[id]) return;
+
+            await deleteSessionAPI(id);
+
+            delete sessions[id];
+            if (activeSessionId === id) activeSessionId = null;
+            renderSessions();
+            chatWindow.innerHTML = `
+        <p class="msg"><strong>System:</strong> Session deleted.</p>
+        <p class="msg">Select a session or start a new one.</p>`;
+          }
+
+          async function addMessageToSession(role, content) {
+            if (isTaskInProgress && role === "You") {
+              showTaskInProgressAlert();
+              return;
+            }
+
+            const id = await ensureActiveSession();
+            if (!id) return; // Session creation was blocked
+
+            const msg = { role, content, ts: nowIso() };
+
+            if (!sessions[id].messages) {
+              sessions[id].messages = [];
+            }
+
+            sessions[id].messages.push(msg);
+            sessions[id].updatedAt = msg.ts;
+
+            await saveMessage(id, role, content);
+
+            renderChatWindow(id);
+            renderSessions();
+          }
+
+          // === Rendering ===
+          function renderSessions(filterText = "") {
+            sessionList.innerHTML = "";
+            const entries = Object.values(sessions)
+              .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
+              .filter((s) =>
+                s.title.toLowerCase().includes(filterText.toLowerCase()),
+              );
+
+            if (!entries.length) {
+              const empty = document.createElement("div");
+              empty.style.opacity = "0.9";
+              empty.innerHTML = "<em>No sessions. Start a new one.</em>";
+              sessionList.appendChild(empty);
+              return;
+            }
+
+            for (const s of entries) {
+              const li = document.createElement("li");
+              li.setAttribute("data-session-id", s.id);
+              if (s.id === activeSessionId) li.classList.add("active");
+
+              const title = document.createElement("div");
+              title.className = "session-title";
+              title.textContent = s.title;
+
+              const meta = document.createElement("div");
+              meta.className = "session-meta";
+              meta.textContent = `Updated: ${shortDate(s.updatedAt)}`;
+
+              const actions = document.createElement("div");
+              actions.className = "session-actions";
+
+              const renameBtn = document.createElement("button");
+              renameBtn.className = "action-btn";
+              renameBtn.title = "Rename session";
+              renameBtn.textContent = "Rename";
+              renameBtn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                const name = prompt("Rename session:", s.title);
+                if (name && name.trim()) renameSession(s.id, name);
+              });
+
+              const delBtn = document.createElement("button");
+              delBtn.className = "action-btn";
+              delBtn.title = "Delete session";
+              delBtn.textContent = "Delete";
+              delBtn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                if (confirm("Delete this session? This cannot be undone.")) {
+                  deleteSession(s.id);
+                }
+              });
+
+              actions.appendChild(renameBtn);
+              actions.appendChild(delBtn);
+
+              li.appendChild(title);
+              li.appendChild(meta);
+              li.appendChild(actions);
+
+              li.addEventListener("click", async () => {
+                if (isTaskInProgress) {
+                  showTaskInProgressAlert();
+                  return;
+                }
+
+                activeSessionId = s.id;
+
+                if (
+                  !sessions[s.id].messages ||
+                  sessions[s.id].messages.length === 0
+                ) {
+                  await loadSessionMessages(s.id);
+                }
+
+                await updateSession(s.id, "activate");
+                renderChatWindow(s.id);
+                renderSessions(searchInput.value.trim());
+              });
+
+              sessionList.appendChild(li);
+            }
+          }
+
+          function renderChatWindow(id) {
+            chatWindow.innerHTML = "";
+            const sess = sessions[id];
+            if (!sess) return;
+            for (const m of sess.messages) {
+              const p = document.createElement("p");
+              p.className = "msg";
+              const strong = document.createElement("strong");
+              strong.textContent =
+                m.role[0].toUpperCase() + m.role.slice(1) + ": ";
+              const span = document.createElement("span");
+              span.textContent = m.content;
+              p.appendChild(strong);
+              p.appendChild(span);
+              chatWindow.appendChild(p);
+            }
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+          }
+
+          // === Toggle Functions ===
+          function toggleMode() {
+            currentMode = currentMode === "sessions" ? "sectors" : "sessions";
+
+            if (currentMode === "sectors") {
+              toggleSwitch.classList.add("sectors");
+              toggleSwitch.querySelector(".toggle-slider").textContent =
+                "Sectors";
+              sidebarTitle.textContent = "Sectors";
+              newSessionBtn.textContent = "+ New";
+              newSessionBtn.title = "Add new sector";
+              sessionList.classList.add("hidden");
+              sectorList.classList.remove("hidden");
+              searchInput.placeholder = "Search sectors...";
+
+              // Reset sector workflow state when switching
+              sectorWorkflowState = null;
+              workflowData = {};
+              selectedSectorId = null;
+
+              // Clear chat window
+              chatWindow.innerHTML = `
+          <p class="msg"><strong>System:</strong> Sector mode activated. Select a sector to start scraping.</p>
+        `;
+
+              loadSectors();
+            } else {
+              toggleSwitch.classList.remove("sectors");
+              toggleSwitch.querySelector(".toggle-slider").textContent =
+                "Sessions";
+              sidebarTitle.textContent = "Sessions";
+              newSessionBtn.textContent = "+ New";
+              newSessionBtn.title = "Start new session";
+              sessionList.classList.remove("hidden");
+              sectorList.classList.add("hidden");
+              searchInput.placeholder = "Search sessions...";
+
+              // Reset sector state
+              selectedSectorId = null;
+              sectorWorkflowState = null;
+              workflowData = {};
+
+              if (activeSessionId && sessions[activeSessionId]) {
+                renderChatWindow(activeSessionId);
+              } else {
+                chatWindow.innerHTML = `
+            <p class="msg"><strong>System:</strong> Welcome! Start a new session or continue an existing one from the left.</p>
+            <p class="msg">Enter the Geodaka known Home Services Company Sector Type or AEC Type to scrape.</p>
+          `;
+              }
+            }
+          }
+
+          // === WebSocket ===
+          function updateStatus(message, type = "status") {
+            statusText.textContent = message;
+            console.log(`[${type.toUpperCase()}] ${message}`);
+          }
+
+          function resetInactivityTimer() {
+            if (inactivityTimeout) clearTimeout(inactivityTimeout);
+            inactivityTimeout = setTimeout(() => {
+              if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.close();
+                updateStatus(
+                  "Connection closed due to inactivity (10 min). Refresh or interact to reconnect.",
+                  "error",
+                );
+              }
+            }, INACTIVITY_LIMIT);
+          }
+
+          function connectWebSocket() {
+            try {
+              updateStatus("Connecting to WebSocket…", "status");
+              const wsProtocol = location.protocol === "https:" ? "wss" : "ws";
+              const wsHost = location.hostname;
+              const url =
+                wsHost === "yardsignproshop.com"
+                  ? "wss://yardsignproshop.com:9443/ws/"
+                  : `${wsProtocol}://${wsHost}:8002/`;
+              ws = new WebSocket(url);
+              console.log("Connecting to:", url);
+              let pingInterval;
+
+              ws.onopen = (event) => {
+                updateStatus("Connected", "success");
+                if (!isTaskInProgress) {
+                  submitBtn.disabled = false;
+                }
+                resetInactivityTimer();
+
+                // Keep-alive ping
+                pingInterval = setInterval(() => {
+                  if (ws && ws.readyState === WebSocket.OPEN) {
+                    ws.send("ping");
+                  }
+                }, 15000); // 15 seconds
+              };
+
+              ws.onmessage = (event) => {
+                if (event.data === "pong") {
+                  return; // ignore heartbeat responses
+                }
+                try {
+                  console.log("Raw WebSocket message:", event.data);
+                  const data = JSON.parse(event.data);
+                  console.log("Parsed WebSocket message:", data);
+
+                  // Handle different message types from your WebSocket handler
+                  switch (data.type) {
+                    case "task_created":
+                      currentTaskId = data.task_id;
+                      localStorage.setItem(
+                        "current_scraping_task_id",
+                        currentTaskId,
+                      );
+                      addSystemMessage(data.message);
+                      setTaskInProgressState(true, {
+                        task_id: data.task_id,
+                        service: "Data Scraping",
+                      });
+                      startTaskStatusPolling(currentTaskId);
+                      break;
+
+                    case "progress_update":
+                      addSystemMessage(data.message);
+                      updateProgressDisplay(data);
+                      break;
+
+                    case "download_ready":
+                      localStorage.removeItem("current_scraping_task_id");
+                      addSystemMessage(data.message);
+                      loader.style.display = "none";
+                      progressContainer.style.display = "none";
+                      currentCsvUrl = data.download_link;
+
+                      // Re-enable controls
+                      setTaskInProgressState(false);
+
+                      // Show custom modal
+                      const csvModal =
+                        document.getElementById("csvChoiceModal");
+                      csvModal.style.display = "block";
+
+                      const downloadCsvBtn =
+                        document.getElementById("downloadCsvBtn");
+                      const autoUploadBtn =
+                        document.getElementById("autoUploadBtn");
+
+                      // Reset previous listeners
+                      downloadCsvBtn.replaceWith(
+                        downloadCsvBtn.cloneNode(true),
+                      );
+                      autoUploadBtn.replaceWith(autoUploadBtn.cloneNode(true));
+
+                      const newDownloadBtn =
+                        document.getElementById("downloadCsvBtn");
+                      const newUploadBtn =
+                        document.getElementById("autoUploadBtn");
+
+                      newDownloadBtn.addEventListener("click", () => {
+                        // Keep modal open, just trigger download
+                        window.open(currentCsvUrl, "_blank");
+                        addSystemMessage("✅ CSV downloaded successfully.");
+                      });
+
+                      newUploadBtn.addEventListener("click", () => {
+                        if (workflowData.sector) {
+                          uploadCsvToAdmin(
+                            currentCsvUrl,
+                            workflowData.sector.id,
+                          );
+                          addSystemMessage("📤 CSV upload initiated...");
+                        } else {
+                          addSystemMessage(
+                            "⚠️ No sector context found for upload.",
+                          );
+                        }
+                        // Don't hide modal here
+                      });
+
+                      // Clear polling
+                      if (taskStatusInterval) {
+                        clearInterval(taskStatusInterval);
+                        taskStatusInterval = null;
+                      }
+                      currentTaskId = null;
+                      break;
+
+                    case "task_failed":
+                      localStorage.removeItem("current_scraping_task_id");
+                      addSystemMessage(data.message);
+                      loader.style.display = "none";
+                      progressContainer.style.display = "none";
+
+                      // Task failed, re-enable controls
+                      setTaskInProgressState(false);
+
+                      // Clear polling
+                      if (taskStatusInterval) {
+                        clearInterval(taskStatusInterval);
+                        taskStatusInterval = null;
+                      }
+                      currentTaskId = null;
+                      break;
+
+                    case "task_status":
+                      updateProgressDisplay(data);
+                      break;
+
+                    case "status_update":
+                      // Explicitly ignore raw status update JSON in the chat window,
+                      // task checking or progress bars handle this visually.
+                      if (data.progress) {
+                        updateProgressDisplay(data);
+                      }
+                      break;
+
+                    default:
+                      // Handle any other message types as system messages
+                      if (data.message) {
+                        addSystemMessage(data.message);
+                      }
+                      break;
+                  }
+                } catch (parseError) {
+                  // Handle plain text messages (backwards compatibility)
+                  const messageText = event.data;
+                  console.log("Plain text message:", messageText);
+
+                  // Check for CSV download links in plain text
+                  const csvMatch = messageText.match(
+                    /https?:\/\/[^\s\]]+\.csv/,
+                  );
+                  if (csvMatch) {
+                    const messageWithoutLink = messageText
+                      .replace(/Download:\s*https?:\/\/[^\s\]]+\.csv/, "")
+                      .trim();
+                    if (messageWithoutLink) {
+                      addSystemMessage(messageWithoutLink);
+                    }
+                    loader.style.display = "none";
+                    progressContainer.style.display = "none";
+                    currentCsvUrl = csvMatch[0];
+
+                    // Task completed, re-enable controls
+                    setTaskInProgressState(false);
+
+                    if (workflowData.sector && sectorWorkflowState === null) {
+                      uploadCsvToAdmin(csvMatch[0], workflowData.sector.id);
+                    } else {
+                      downloadSection.style.display = "flex";
+                      downloadLink.href = csvMatch[0];
+                      if (workflowData.sector) {
+                        uploadToAdminBtn.style.display = "inline-block";
+                      }
+                    }
+                    return;
+                  }
+
+                  // Handle loading messages
+                  if (messageText.includes("Scraping in progress")) {
+                    addSystemMessage(messageText);
+                    loader.style.display = "flex";
+                    loaderText.textContent = "Scraping in progress...";
+                    setTaskInProgressState(true, { service: "Data Scraping" });
+                    return;
+                  }
+
+                  // Handle error messages
+                  if (
+                    messageText
+                      .toLowerCase()
+                      .includes("haven't specified a service")
+                  ) {
+                    addSystemMessage(messageText);
+                    loader.style.display = "none";
+                    progressContainer.style.display = "none";
+                    setTaskInProgressState(false);
+                    return;
+                  }
+
+                  // Default: treat as system message
+                  addSystemMessage(messageText);
+                }
+
+                resetInactivityTimer();
+              };
+
+              ws.onerror = (error) => {
+                console.error("WebSocket error:", error);
+                updateStatus("WebSocket connection error!", "error");
+              };
+
+              ws.onclose = (event) => {
+                console.log("WebSocket closed:", event);
+                submitBtn.disabled = true;
+                updateStatus("Disconnected. Reconnecting…", "status");
+                setTimeout(connectWebSocket, 1200);
+                if (inactivityTimeout) clearInterval(inactivityTimeout);
+                if (taskStatusInterval) {
+                  clearInterval(taskStatusInterval);
+                  taskStatusInterval = null;
+                }
+              };
+            } catch (error) {
+              console.error("Failed to create WebSocket connection:", error);
+              updateStatus("Failed to create WebSocket connection!", "error");
+            }
+          }
+
+          // === CSV Upload to Admin ===
+          async function uploadCsvToAdmin(csvUrl, sectorId) {
+            try {
+              addSystemMessage("Uploading results to admin panel...");
+
+              const response = await apiRequest("/api/upload-csv-to-admin/", {
+                method: "POST",
+                body: JSON.stringify({
+                  csv_url: csvUrl,
+                  sector_id: sectorId,
+                }),
+              });
+
+              if (response.success) {
+                addSystemMessage(
+                  `✅ Successfully uploaded ${
+                    response.records_processed || "CSV"
+                  } records to admin panel.`,
+                );
+
+                // Reset workflow data after successful upload
+                workflowData = {};
+                uploadToAdminBtn.style.display = "none";
+              } else {
+                addSystemMessage(`❌ Upload failed: ${response.message}`);
+              }
+            } catch (error) {
+              console.error("CSV upload to admin failed:", error);
+              addSystemMessage(
+                "❌ Failed to upload CSV to admin panel. Please try again.",
+              );
+            }
+          }
+
+          // === Actions ===
+          function sendPrompt() {
+            const input = promptInput.value.trim();
+            if (!input) {
+              alert("Please enter a prompt.");
+              return;
+            }
+
+            // Check if task is in progress
+            if (isTaskInProgress) {
+              showTaskInProgressAlert();
+              return;
+            }
+
+            // Handle sector workflow input
+            if (
+              sectorWorkflowState &&
+              ["entering_count", "entering_location"].includes(
+                sectorWorkflowState,
+              )
+            ) {
+              handleSectorWorkflowInput(input);
+              promptInput.value = "";
+              return;
+            }
+
+            if (!ws || ws.readyState !== WebSocket.OPEN) {
+              alert(
+                "WebSocket connection is not open. Please wait for connection or refresh the page.",
+              );
+              return;
+            }
+
+            // For sessions mode, add message to session
+            if (currentMode === "sessions") {
+              addMessageToSession("You", input);
+            }
+
+            sendToWebSocket(input, false);
+            promptInput.value = "";
+          }
+
+          function sendToWebSocket(message, isForCsvUpload = false) {
+            if (isTaskInProgress) {
+              showTaskInProgressAlert();
+              return;
+            }
+
+            try {
+              ws.send(message);
+              resetInactivityTimer();
+              loader.style.display = "flex";
+              loaderText.textContent = "Processing request...";
+              progressContainer.style.display = "none";
+              submitBtn.disabled = true;
+              downloadSection.style.display = "none";
+              uploadToAdminBtn.style.display = "none";
+
+              // Don't re-enable submit button automatically if task monitoring will handle it
+              setTimeout(() => {
+                if (
+                  !isForCsvUpload &&
+                  (!currentTaskId || !taskStatusInterval)
+                ) {
+                  if (!isTaskInProgress) {
+                    submitBtn.disabled = false;
+                  }
+                }
+              }, 1200);
+            } catch (error) {
+              console.error("Failed to send message:", error);
+              alert("Failed to send message. Please try again.");
+              if (!isTaskInProgress) {
+                submitBtn.disabled = false;
+              }
+              loader.style.display = "none";
+            }
+          }
+
+          // === Event Listeners ===
+          submitBtn.addEventListener("click", () => {
+            if (isTaskInProgress) {
+              showTaskInProgressAlert();
+              return;
+            }
+            sendPrompt();
+          });
+
+          promptInput.addEventListener("keypress", (e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              if (isTaskInProgress) {
+                showTaskInProgressAlert();
+                return;
+              }
+              sendPrompt();
+            }
+          });
+
+          // Prevent typing in disabled textarea
+          promptInput.addEventListener("keydown", (e) => {
+            if (isTaskInProgress && !e.ctrlKey && !e.metaKey) {
+              e.preventDefault();
+              showTaskInProgressAlert();
+            }
+          });
+
+          newSessionBtn.addEventListener("click", async () => {
+            if (isTaskInProgress) {
+              showTaskInProgressAlert();
+              return;
+            }
+
+            if (currentMode === "sectors") {
+              window.location.href = "/admin/accounts/sector/add/";
+            } else {
+              await createNewSession("New session");
+            }
+          });
+
+          searchInput.addEventListener("input", (e) => {
+            const filterText = e.target.value.trim();
+            if (currentMode === "sessions") {
+              renderSessions(filterText);
+            } else {
+              renderSectors(filterText);
+            }
+          });
+
+          toggleSwitch.addEventListener("click", () => {
+            toggleMode();
+          });
+
+          // Manual upload button
+          uploadToAdminBtn.addEventListener("click", () => {
+            if (currentCsvUrl && workflowData.sector) {
+              uploadCsvToAdmin(currentCsvUrl, workflowData.sector.id);
+            }
+          });
+
+          // Modal event listeners
+          closeModalBtn.addEventListener("click", () => {
+            historyModal.style.display = "none";
+          });
+
+          window.addEventListener("click", (e) => {
+            if (e.target === historyModal) {
+              historyModal.style.display = "none";
+            }
+          });
+          // === Init ===
+          loadSessions();
+          connectWebSocket();
+          checkForActiveTask();
+
+          // Start monitoring for active tasks every 5s
+          startActiveTaskMonitoring();
+        </script>
+        <!-- CSV Choice Modal -->
+        <div id="csvChoiceModal" class="modal">
+          <div
+            class="modal-content"
+            style="text-align: center; max-width: 400px; position: relative"
+          >
+            <!-- ❌ Close Button -->
+            <span
+              id="closeCsvModal"
+              style="
+                position: absolute;
+                top: 8px;
+                right: 12px;
+                cursor: pointer;
+                font-size: 20px;
+                color: #888;
+              "
+              title="Close"
+              >&times;</span
+            >
+
+            <h3 style="margin-bottom: 15px">Scraping Completed!</h3>
+            <p style="margin-bottom: 20px">
+              What would you like to do with the generated CSV file?
+            </p>
+            <div style="display: flex; justify-content: center; gap: 12px">
+              <button
+                id="downloadCsvBtn"
+                style="background: linear-gradient(90deg, #00b09b, #96c93d)"
+              >
+                Download CSV
+              </button>
+              <button
+                id="autoUploadBtn"
+                style="background: linear-gradient(90deg, #ff6a00, #ee0979)"
+              >
+                Auto Upload
+              </button>
+            </div>
+          </div>
+        </div>
+        <script>
+          // Close modal only when clicking the × button
+          document
+            .getElementById("closeCsvModal")
+            .addEventListener("click", () => {
+              document.getElementById("csvChoiceModal").style.display = "none";
+            });
+        </script>
+      </body>
+    </html>
+  </head>
+</html>

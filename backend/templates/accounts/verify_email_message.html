@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Yard Sign Pro Shop - Verification Email</title>
+	<style>
+		body {
+			font-family: Arial, sans-serif;
+			margin: 0;
+			padding: 0;
+		}
+		.container {
+			max-width: 800px;
+			margin: 0 auto;
+			padding: 20px;
+			background-color: #f9f9f9;
+		}
+		.header {
+			text-align: center;
+			margin-bottom: 30px;
+		}
+		.header h1 {
+			font-size: 36px;
+			color: #575757;
+			margin: 0;
+		}
+		.header p {
+			font-size: 20px;
+			color: #575757;
+			margin: 0;
+		}
+		.content {
+			font-size: 20px;
+			color: #575757;
+			margin-bottom: 30px;
+		}
+		.content p {
+			margin: 0 0 15px;
+		}
+		.footer {
+			text-align: center;
+			font-size: 20px;
+			color: #575757;
+			margin-top: 30px;
+		}
+		.footer p {
+			margin: 0;
+		}
+	</style>
+</head>
+<body>
+	<div class="container">
+		<div class="header">
+			<h1>Yard Sign Pro Shop</h1>
+			<p>Customer Support Team</p>
+		</div>
+		<div style="background-color: #c2c2c2; padding: 15px;">
+            <h2 style="margin: 0; padding: 10px; border-top-left-radius: 10px; border-top-right-radius: 10px; background-color: #282b35; color: #ffffff;">Verify Email For YardSign Pro</h2>
+            <div style="margin: 0; padding: 15px; background-color: #ffffff;">
+                <p>Hi {{ user.name }},</p>
+                <p>You created an account on yardsignproshop.com, you need to verify your email. Please click on the button below to verify your email.</p>
+                <a href="https://yardsignproshop.com/verify/?uidb64={{uid}}&token={{token}}" style="border: 0; color: #ffffff; background-color: #5865F2; padding: 15px; font-weight: bold; text-decoration: none; border-radius: 5px; margin-top: 50px;">
+                    Verify Email
+                </a>
+                <p style="margin-top: 40px;">Or you can copy the link below to your browser</p>
+                <p>https://yardsignproshop.com/verify/?uidb64={{uid}}&token={{token}}</p>
+                <p>YARDSIGN PRO Team</p>
+            </div>
+            
+        </div>
+		<div class="footer">
+			<p>Customer Support Team</p>
+			<p>Yard Sign Pro Shop</p>
+		</div>
+	</div>
+</body>
+</html>
+
+
+

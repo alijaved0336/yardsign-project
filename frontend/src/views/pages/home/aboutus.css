@@ -1,0 +1,60 @@
+.custom-collapse {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    gap: 16px;
+    width: 100%;
+    border: none;
+    background-color: inherit;
+  }
+
+  .custom-collapse > .ant-collapse-item {
+    border-radius: 8px;
+    outline: 1px solid #ebebeb;
+    border-bottom: none;
+    background: #fafafa;
+  }
+
+  .custom-collapse
+    > .ant-collapse-item
+    > .ant-collapse-content
+    .ant-collapse-content-active
+    > .ant-collapse-content-box {
+    font-family: sans-serif;
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 24px;
+    text-align: justify;
+  }
+
+  .custom-collapse
+    > .ant-collapse-item
+    > .ant-collapse-header
+    > .ant-collapse-expand-icon
+    > .ant-collapse-arrow {
+    transform: rotate(90deg);
+    stroke-width: 60px;
+    stroke: currentColor;
+  }
+
+  .custom-collapse > .ant-collapse-item > .ant-collapse-header {
+    flex-direction: row-reverse;
+  }
+
+  .MuiAccordionSummary-expandIconWrapper {
+    color:#000
+  }
+
+
+  .MuiAccordionSummary-content 
+  {
+    font-family: sans-serif;
+    font-size: 16px;
+    font-weight: 900;
+    padding-right: 10px;
+    line-height: 24px;
+    text-align: justify;
+  }
+  .ant-collapse-content-box {
+    text-align: justify;
+  }

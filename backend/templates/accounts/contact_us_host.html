@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yard Sign Pro Shop</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #f1f1f1;
+            padding: 20px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+        }
+        .content {
+            margin-top: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f1f1f1;
+        }
+        .footer {
+            background-color: #f1f1f1;
+            padding: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Yard Sign Pro Shop</h1>
+        </div>
+        <div class="content">
+            <p>Hello,</p>
+            <p>You've received a new message from a user: </p>
+            <p><b>{{ user.message }}</b></p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Field</th>
+                        <th>Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Email</td>
+                        <td>{{ user.email }}</td>
+                    </tr>
+                    <tr>
+                        <td>First Name</td>
+                        <td>{{ user.first_name }}</td>
+                    </tr>
+                    <tr>
+                        <td>Last Name</td>
+                        <td>{{ user.last_name }}</td>
+                    </tr>
+                    <tr>
+                        <td>Phone no</td>
+                        <td>{{ user.phone }}</td>
+                    </tr>
+                    <tr>
+                        <td>Address</td>
+                        <td>{{ user.address }}</td>
+                    </tr>
+                    <tr>
+                        <td>City</td>
+                        <td>{{ user.city }}</td>
+                    </tr>
+                    <tr>
+                        <td>State</td>
+                        <td>{{ user.state }}</td>
+                    </tr>
+                    <tr>
+                        <td>Zipcode</td>
+                        <td>{{ user.zipcode }}</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>Please respond promptly.</p>
+        </div>
+        <div class="footer">
+            <p>Best regards,<br>Yard Sign Pro Shop</p>
+        </div>
+    </div>
+</body>
+</html>

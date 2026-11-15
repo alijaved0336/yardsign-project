@@ -1,0 +1,134 @@
+{% extends "admin/change_list.html" %}
+
+{% block object-tools-items %}
+{{ block.super }}
+
+<!-- Button container with circular loader inside the button -->
+<div style="position: relative; display: inline-block;">
+    <button id="uploadCsvButton" class="btn btn-success float-right" style="position: relative; padding-left: 30px; padding-right: 30px;">
+        <span id="buttonText">Upload User CSV</span>
+        <!-- Circular loader inside the button -->
+        <div id="loader" class="loader" style="position: absolute; top: 25%; right:-2%; transform: translate(-50%, -50%); display: none;"></div>
+        <span id="uploadingText" style="display: none; margin-right:10px;">Uploading </span>
+    </button>
+</div>
+<input type="file" id="csvFileInput" accept=".csv" style="display:none;" />
+
+{% endblock %}
+
+{% block extrahead %}
+{{ block.super }}
+<style>
+    /* Circular loader styles */
+    .loader {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #28a745;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        animation: spin 1s linear infinite;
+        margin-right: 10px; /* Space between loader and text */
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const uploadButton = document.getElementById('uploadCsvButton');
+        const fileInput = document.getElementById('csvFileInput');
+        const loader = document.getElementById('loader');
+        const uploadingText = document.getElementById('uploadingText');
+        const buttonText = document.getElementById('buttonText');
+        
+        let toastQueue = [];
+
+        uploadButton.addEventListener('click', function () {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', function () {
+            const file = fileInput.files[0];
+            if (file) {
+                const formData = new FormData();
+                formData.append('csv_file', file);
+
+                // Show the loader and uploading text inside the button
+                loader.style.display = 'block';
+                uploadingText.style.display = 'inline-block'; // Show "Uploading..." text
+                buttonText.style.display = 'none'; // Hide "Upload User CSV" text
+
+                // Disable the button to prevent further clicks
+                uploadButton.disabled = true;
+
+                // Now upload the CSV
+                fetch('{% url "admin:upload_csv" %}', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: formData, 
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Show success message after upload completes
+                showToast('CSV file uploaded successfully and Email Sent to all Users!', 'success');
+                setTimeout(() => {
+                            location.reload();
+                        }, 1000);
+                    } 
+                    else {
+                        alert(`Error: ${data.message}`);
+                    }
+                    // Reset the button after the upload is finished
+                    uploadButton.disabled = false;
+                    loader.style.display = 'none'; // Hide the loader
+                    uploadingText.style.display = 'none'; // Hide "Uploading..." text
+                    buttonText.style.display = 'block'; // Show the button text again
+                })
+                .catch(error => {
+                    alert(`An unexpected error occurred: ${error}`);
+                    loader.style.display = 'none'; // Hide the loader in case of error
+                    uploadingText.style.display = 'none'; // Hide "Uploading..." text
+                    buttonText.style.display = 'block'; // Show the button text again
+                    uploadButton.disabled = false; // Re-enable the button
+                });
+            }
+        });
+
+        // Function to show toast notification
+        function showToast(message, type) {
+            const toast = document.createElement('div');
+            toast.classList.add('toast', 'fade', 'show');
+            toast.style.position = 'fixed';
+            toast.style.bottom = '20px';
+            toast.style.right = '20px';
+            toast.style.backgroundColor = type === 'success' ? '#28a745' : '#dc3545';
+            toast.style.color = 'white';
+            toast.style.padding = '15px';
+            toast.style.borderRadius = '5px';
+            toast.style.zIndex = '9999';
+            toast.innerText = message;
+
+            const offset = toastQueue.length * 60;
+            toast.style.bottom = `${20 + offset}px`;
+
+            toastQueue.push(toast);
+            document.body.appendChild(toast);
+
+            // Remove toast after 5 seconds
+            setTimeout(() => {
+                toast.classList.remove('show');
+                document.body.removeChild(toast);
+
+                toastQueue = toastQueue.filter(t => t !== toast);
+                adjustToastPositions();
+            }, 5000); 
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,69 @@
+name: Frontend CI/CD - CD
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  AWS_REGION: us-east-1
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  PRIVATE_SSH_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+  SERVER_PUBLIC_IP: ${{ secrets.AWS_PUBLIC_KEY }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Backup Frontend
+      - name: Check if Backup Folder of FrontEnd Exists and Delete to avoid Duplicates
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ env.SERVER_PUBLIC_IP }}
+          username: ubuntu
+          key: ${{ env.PRIVATE_SSH_KEY }}
+          script: |
+            DATE=$(date +%d_%m_%Y)
+            cd /home/ubuntu/YardSign_Pro_Backups/FrontEnd_Backups
+            sudo rm -rf YardSign_FrontEnd_$DATE
+
+      - name: Backup FrontEnd
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ env.SERVER_PUBLIC_IP }}
+          username: ubuntu
+          key: ${{ env.PRIVATE_SSH_KEY }}
+          script: |
+            DATE=$(date +%d_%m_%Y)
+            sudo cp -r /home/ubuntu/YardSign_Pro/YardSign_FrontEnd /home/ubuntu/YardSign_Pro_Backups/FrontEnd_Backups/YardSign_FrontEnd_$DATE
+            cd /home/ubuntu/YardSign_Pro_Backups/FrontEnd_Backups/YardSign_FrontEnd_$DATE/FrontEnd
+            sudo rm -rf build node_modules
+
+      # Deploy Frontend Code
+      - name: Update Frontend Code on Server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ env.SERVER_PUBLIC_IP }}
+          username: ubuntu
+          key: ${{ env.PRIVATE_SSH_KEY }}
+          script: |
+            cd /home/ubuntu/YardSign_Pro/YardSign_FrontEnd
+            git pull origin main
+            npm install
+            npm run build
+
+      # Restart Frontend Service
+      - name: Restart Frontend Service
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ env.SERVER_PUBLIC_IP }}
+          username: ubuntu
+          key: ${{ env.PRIVATE_SSH_KEY }}
+          script: |
+            sudo systemctl restart YardSign_FrontEnd.service

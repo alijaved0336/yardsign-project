@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <!-- Add CSRF token as meta tag -->
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; }
+
+      body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #f8fafc; margin: 0; min-height: 100vh; color: #334155; line-height: 1.5;
+      }
+
+      .breadcrumbs {
+            background: #0891b2; color: #fff; padding: 12px 20px; font-size: 14px;
+        border-bottom: 1px solid #0e7490;
+      }
+        .breadcrumbs a { color: #fff; text-decoration: none; font-weight: 500; opacity: 0.9; }
+        .breadcrumbs a:hover { opacity: 1; }
+
+        .container { max-width: 1800px; margin: 0 auto; padding: 24px; }
+
+        h1 { font-size: 28px; font-weight: 600; color: #1e293b; margin: 0 0 8px 0; }
+        .help { color: #64748b; margin-bottom: 24px; font-size: 15px; }
+
+      /* Navigation Tabs */
+      .view-tabs {
+            background: #fff; border: 1px solid #e2e8f0; border-radius: 8px;
+            padding: 16px 20px; margin-bottom: 20px; display: flex; gap: 12px; flex-wrap: wrap;
+      }
+      .tab-button {
+            padding: 8px 16px; border: 1px solid #d1d5db; border-radius: 6px;
+            background: #f9fafb; color: #374151; text-decoration: none; font-weight: 500;
+            font-size: 14px; transition: all 0.2s;
+      }
+        .tab-button:hover { background: #f3f4f6; }
+        .tab-button.active { background: #0891b2; color: #fff; border-color: #0891b2; }
+
+      /* Actions Bar */
+      .actions-bar {
+            background: #fff; border: 1px solid #e2e8f0; border-radius: 8px;
+            padding: 16px 20px; margin-bottom: 20px; display: flex; justify-content: space-between;
+            align-items: center; flex-wrap: wrap; gap: 12px;
+      }
+      .selection-counter {
+        font-weight: 500;
+        color: #475569;
+        font-size: 15px;
+      }
+      .action-buttons {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      /* Search */
+      .changelist-search {
+            background: #fff; border: 1px solid #e2e8f0; border-radius: 8px;
+            padding: 20px; margin-bottom: 20px;
+      }
+        .search-label { font-size: 14px; font-weight: 500; color: #374151; margin-right: 12px; }
+      .changelist-search input[type="text"] {
+            padding: 10px 14px; border: 1px solid #d1d5db; border-radius: 6px;
+            width: 400px; font-size: 14px; font-family: 'Inter', sans-serif; background: #fff;
+      }
+      .changelist-search input[type="text"]:focus {
+            outline: none; border-color: #0891b2; box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.1);
+      }
+      .changelist-search input[type="submit"] {
+            background: #0891b2; color: white; border: none; padding: 10px 20px;
+            border-radius: 6px; margin-left: 10px; cursor: pointer; font-weight: 500;
+            font-size: 14px; font-family: 'Inter', sans-serif;
+      }
+        .changelist-search input[type="submit"]:hover { background: #0e7490; }
+      .changelist-search a {
+            color: #0891b2; text-decoration: none; margin-left: 12px;
+            font-size: 14px; font-weight: 500;
+      }
+        .changelist-search a:hover { color: #0e7490; }
+
+      /* Results Table */
+      .results {
+            background: #fff; border: 1px solid #e2e8f0; border-radius: 8px;
+            overflow-x: auto; margin-bottom: 24px;
+      }
+        #result_list { width: 100%; border-collapse: collapse; margin: 0; min-width: 1200px; }
+        #result_list th, #result_list td { 
+            padding: 12px 16px; border-bottom: 1px solid #f1f5f9; text-align: left; vertical-align: middle;
+      }
+      #result_list th {
+            background: #f8fafc; color: #374151; font-weight: 600; font-size: 13px;
+            text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #e2e8f0;
+            position: sticky; top: 0; z-index: 10;
+      }
+        .row1 { background: #fff; }
+        .row2 { background: #f8fafc; }
+        .row1:hover, .row2:hover { background: #f0f9ff; }
+
+      /* Buttons */
+      .button {
+            background: #0891b2; color: #fff !important; padding: 6px 12px; border-radius: 5px;
+            text-decoration: none; font-size: 12px; border: none; cursor: pointer;
+            display: inline-block; margin-right: 6px; margin-bottom: 4px; font-weight: 500;
+            font-family: 'Inter', sans-serif; white-space: nowrap; transition: all 0.2s;
+      }
+        .button:hover { background: #0e7490; color: #fff !important; }
+        .button.default { background: #059669; padding: 8px 16px; font-size: 14px; }
+        .button.default:hover { background: #047857; }
+        .button.secondary { background: #6b7280; }
+        .button.secondary:hover { background: #4b5563; }
+        .button.danger { background: #dc2626; }
+        .button.danger:hover { background: #b91c1c; }
+        .button.small { padding: 4px 8px; font-size: 11px; }
+
+      .status-badge {
+            padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 500;
+            color: white; display: inline-block; text-align: center; min-width: 80px;
+      }
+        .status-badge.registered { background: #059669; }
+        .status-badge.unregistered { background: #dc2626; }
+
+        .company-name { font-weight: 600; color: #1e293b; font-size: 14px; }
+        .company-email a, .company-website a { 
+            color: #0891b2; text-decoration: none; font-weight: 500;
+      }
+        .company-email a:hover, .company-website a:hover { 
+            color: #0e7490; text-decoration: underline; 
+      }
+
+        .text-muted { color: #9ca3af; font-style: italic; }
+      .action-buttons {
+            white-space: nowrap; display: flex; flex-wrap: wrap;
+            gap: 4px; align-items: center;
+      }
+
+      .no-data {
+            text-align: center; padding: 40px 20px; color: #64748b;
+      }
+        .no-data p { font-size: 15px; margin-bottom: 12px; }
+        .no-data a { color: #0891b2; text-decoration: none; font-weight: 500; }
+        .no-data a:hover { color: #0e7490; }
+
+      /* Responsive */
+      @media (max-width: 768px) {
+            .container { padding: 16px; }
+            h1 { font-size: 24px; }
+            .changelist-search input[type="text"] { width: 100%; margin-bottom: 8px; }
+            .changelist-search input[type="submit"] { margin-left: 0; width: 100%; }
+            .action-buttons { flex-direction: column; align-items: stretch; }
+            .button { margin-right: 0; text-align: center; }
+            .view-tabs { flex-direction: column; }
+            .actions-bar { flex-direction: column; align-items: stretch; }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Add hidden CSRF token form -->
+    <form style="display: none;">
+        {% csrf_token %}
+    </form>
+
+    <!-- Breadcrumbs -->
+    <div class="breadcrumbs">
+      <a href="/admin/">Home</a>
+        › <a href="/admin/accounts/">Accounts</a>
+        › <a href="/admin/accounts/companydata/">Company Data Management</a>
+      › All Companies
+    </div>
+
+    <div class="container">
+      <!-- Header -->
+      <h1>{{ title }}</h1>
+      <p class="help">View and manage all companies across all sectors</p>
+
+      <!-- View Navigation Tabs -->
+      <div class="view-tabs">
+            <a href="?view=sectors" class="tab-button">
+                Sectors Overview
+            </a>
+        <a href="?view=companies" class="tab-button active">
+          All Companies YardSigns
+        </a>
+            <a href="?view=users" class="tab-button">
+                All Users
+            </a>
+      </div>
+
+      <!-- Actions Bar -->
+      <div class="actions-bar">
+        <div class="selection-counter">
+                {{ total_companies }} compan{{ total_companies|pluralize:"y,ies" }} total
+        </div>
+        <div class="action-buttons">
+          <a href="#" class="button default" onclick="toggleBulkActions()">
+            Bulk Actions
+          </a>
+                <a href="/admin/accounts/companydata/?view=sectors" class="button secondary">
+            Back to Sectors
+          </a>
+        </div>
+      </div>
+
+      <!-- Search -->
+      <div class="changelist-search">
+            <form method="get" style="display: flex; align-items: center; flex-wrap: wrap;">
+                <input type="hidden" name="view" value="companies">
+          <label for="searchbar" class="search-label">Search Companies:</label>
+                <input type="text" name="q" value="{{ search_query }}" id="searchbar" 
+                       placeholder="Search by company name, address, email, or sector..." autofocus>
+                <input type="submit" value="Search">
+          {% if search_query %}
+          <a href="?view=companies">Clear search</a>
+          {% endif %}
+        </form>
+      </div>
+
+      <!-- Results Table -->
+      <div class="results">
+        <table id="result_list">
+          <thead>
+            <tr>
+              <th scope="col">
+                            <input type="checkbox" id="selectAll" onchange="toggleSelectAll()">
+              </th>
+              <th scope="col">Company Name</th>
+              <th scope="col">Sector</th>
+              <th scope="col">Address</th>
+              <th scope="col">Website</th>
+              <th scope="col">Contact</th>
+              <th scope="col">Phone</th>
+              <th scope="col">Email</th>
+              <th scope="col">Status</th>
+              <th scope="col">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for company_data in companies_with_details %}
+            <tr class="{% cycle 'row1' 'row2' %}">
+              <td>
+                            <input type="checkbox" name="company_ids" value="{{ company_data.company.id }}" 
+                                   class="company-checkbox">
+              </td>
+              <td>
+                            <span class="company-name">{{ company_data.company.company_name|default:"No Name" }}</span>
+              </td>
+              <td>
+                            <strong>{{ company_data.company.sector_name|default:"No Sector" }}</strong>
+              </td>
+              <td>
+                <span title="{{ company_data.company.address }}">
+                                {{ company_data.company.address|default:"-"|truncatechars:40 }}
+                </span>
+              </td>
+              <td class="company-website">
+                            {% if company_data.company_website and company_data.company_website != "-" %}
+                                <a href="{{ company_data.company_website }}" target="_blank" 
+                                   title="{{ company_data.company_website }}">
+                  {{ company_data.company_website|truncatechars:25 }}
+                </a>
+                {% else %}
+                <span class="text-muted">-</span>
+                {% endif %}
+              </td>
+              <td>
+                {{ company_data.contact_name|default:"-"|truncatechars:20 }}
+              </td>
+              <td>
+                            {% if company_data.company_phone and company_data.company_phone != "-" %}
+                                {{ company_data.company_phone }}
+                            {% else %}
+                <span class="text-muted">-</span>
+                {% endif %}
+              </td>
+              <td class="company-email">
+                {% if company_data.company.user %}
+                                <a href="mailto:{{ company_data.company.user.email }}" 
+                                   title="{{ company_data.company.user.email }}">
+                  {{ company_data.company.user.email|truncatechars:25 }}
+                </a>
+                {% else %}
+                <span class="text-muted">No User</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if company_data.is_registered %}
+                <span class="status-badge registered">Registered</span>
+                {% else %}
+                <span class="status-badge unregistered">Unregistered</span>
+                {% endif %}
+              </td>
+              <td>
+                <div class="action-buttons">
+                                <a href="/admin/accounts/companydata/company/{{ company_data.company.id }}/edit/" 
+                                   class="button small" title="Edit Company">
+                    Edit Company YardSign
+                  </a>
+                  {% if company_data.user_info %}
+                                    <a href="/admin/accounts/userinfo/{{ company_data.user_info.id }}/change/" 
+                                       class="button small secondary" title="Edit User Info">
+                    User Info
+                  </a>
+                  {% endif %}
+                  <button
+                    class="button danger small"
+                    onclick="deleteCompanyYardSign({{ company_data.company.id }}, '{{ company_data.company.company_name|escapejs }}')"
+                    title="Delete Company"
+                  >
+                    Delete YardSign
+                  </button>
+                </div>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="10" class="no-data">
+                {% if search_query %}
+                                <p>No companies found matching "<strong>{{ search_query }}</strong>"</p>
+                                <p><a href="?view=companies">View all companies</a> or try a different search term.</p>
+                {% else %}
+                <p>No companies found.</p>
+                                <p><a href="/admin/accounts/companydata/?view=sectors">View sectors</a> to get started.</p>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Bulk Actions -->
+        <div class="actions-bar" id="bulkActions" style="display: none;">
+        <div class="selection-counter">
+                <span id="selectedCount">0</span> compan{{ selectedCount|pluralize:"y,ies" }} selected
+        </div>
+        <div class="action-buttons">
+          <button class="button danger" onclick="bulkDeleteCompanies()">
+            Delete Selected
+          </button>
+          <button class="button secondary" onclick="bulkExportCompanies()">
+            Export Selected
+          </button>
+          <button class="button secondary" onclick="clearSelection()">
+            Clear Selection
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // CSRF Token Helper - Updated to use multiple sources
+      function getCsrfToken() {
+        // Try to get from meta tag first
+        const metaToken = document.querySelector('meta[name="csrf-token"]');
+        if (metaToken) {
+                return metaToken.getAttribute('content');
+        }
+
+        // Try to get from hidden form
+            const formToken = document.querySelector('[name=csrfmiddlewaretoken]');
+        if (formToken) {
+          return formToken.value;
+        }
+
+        // Fallback to cookie
+            return getCookie('csrftoken');
+      }
+
+      function getCookie(name) {
+        let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+          for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+              break;
+            }
+          }
+        }
+        return cookieValue;
+      }
+
+      function toggleBulkActions() {
+            const checkboxes = document.querySelectorAll('.company-checkbox');
+            const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+            checkboxes.forEach(cb => cb.checked = !allChecked);
+            document.getElementById('selectAll').checked = !allChecked;
+        updateBulkActions();
+      }
+
+      function toggleSelectAll() {
+            const selectAll = document.getElementById('selectAll');
+            const checkboxes = document.querySelectorAll('.company-checkbox');
+            checkboxes.forEach(cb => cb.checked = selectAll.checked);
+        updateBulkActions();
+      }
+
+      function updateBulkActions() {
+            const checked = document.querySelectorAll('.company-checkbox:checked');
+            const bulkActions = document.getElementById('bulkActions');
+            const selectedCount = document.getElementById('selectedCount');
+
+        if (checked.length > 0) {
+                bulkActions.style.display = 'flex';
+          selectedCount.textContent = checked.length;
+        } else {
+                bulkActions.style.display = 'none';
+        }
+      }
+
+      function clearSelection() {
+            document.querySelectorAll('.company-checkbox').forEach(cb => cb.checked = false);
+            document.getElementById('selectAll').checked = false;
+        updateBulkActions();
+      }
+
+      // Fixed individual delete function
+      function deleteCompanyYardSign(companyId, companyName) {
+        if (
+          confirm(
+            `Are you sure you want to delete company "${companyName}"? This action cannot be undone.`
+          )
+        ) {
+          const button = event.target;
+          button.disabled = true;
+          button.textContent = "Deleting...";
+
+          fetch(
+            `/admin/accounts/companydata/company/${companyId}/delete_yard_sign/`,
+            {
+              method: "POST",
+              headers: {
+                "X-CSRFToken": getCsrfToken(),
+                "Content-Type": "application/json",
+              },
+            }
+          )
+            .then((response) => {
+              if (!response.ok) {
+                throw new Error(
+                  `HTTP ${response.status}: ${response.statusText}`
+                );
+              }
+              return response.json();
+            })
+            .then((data) => {
+              if (data.success) {
+                alert("Company deleted successfully: " + data.message);
+                location.reload();
+              } else {
+                alert("Error: " + data.message);
+                button.disabled = false;
+                button.textContent = "Delete";
+              }
+            })
+            .catch((error) => {
+              console.error("Delete error:", error);
+              alert("Error deleting company: " + error.message);
+              button.disabled = false;
+              button.textContent = "Delete";
+            });
+        }
+      }
+
+      // Fixed bulk delete function
+      function bulkDeleteCompanies() {
+            const checked = document.querySelectorAll('.company-checkbox:checked');
+        if (checked.length === 0) {
+                alert('Please select companies to delete.');
+          return;
+        }
+
+            const companyIds = Array.from(checked).map(cb => cb.value);
+            if (confirm(`Are you sure you want to delete ${companyIds.length} selected companies? This action cannot be undone.`)) {
+                const bulkActions = document.getElementById('bulkActions');
+          const originalHTML = bulkActions.innerHTML;
+                bulkActions.innerHTML = '<div style="padding: 20px; text-align: center;">Deleting companies... Please wait...</div>';
+
+                fetch('/admin/accounts/companydata/companies/bulk-delete/', {
+                    method: 'POST',
+            headers: {
+                        'X-CSRFToken': getCsrfToken(),
+                        'Content-Type': 'application/json',
+            },
+                    body: JSON.stringify({company_ids: companyIds})
+          })
+                .then(response => {
+              if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+              }
+              return response.json();
+            })
+                .then(data => {
+              if (data.success) {
+                        alert('Success: ' + data.message);
+                location.reload();
+              } else {
+                        alert('Error: ' + data.message);
+                bulkActions.innerHTML = originalHTML;
+              }
+            })
+                .catch(error => {
+                    console.error('Bulk delete error:', error);
+                    alert('Error deleting companies: ' + error.message);
+              bulkActions.innerHTML = originalHTML;
+            });
+        }
+      }
+
+      function bulkExportCompanies() {
+            const checked = document.querySelectorAll('.company-checkbox:checked');
+        if (checked.length === 0) {
+                alert('Please select companies to export.');
+          return;
+        }
+
+            const companyIds = Array.from(checked).map(cb => cb.value);
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/admin/accounts/companydata/export/companies/';
+
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = 'csrfmiddlewaretoken';
+        csrfInput.value = getCsrfToken();
+        form.appendChild(csrfInput);
+
+            companyIds.forEach(id => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'company_ids';
+          input.value = id;
+          form.appendChild(input);
+        });
+
+        document.body.appendChild(form);
+        form.submit();
+        document.body.removeChild(form);
+      }
+
+      // Add event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.company-checkbox').forEach(cb => {
+                cb.addEventListener('change', updateBulkActions);
+        });
+      });
+    </script>
+  </body>
+</html>

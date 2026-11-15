@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        
+        body { 
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #f8fafc;
+            margin: 0;
+            min-height: 100vh;
+            color: #334155;
+            line-height: 1.5;
+        }
+        
+        .breadcrumbs { 
+            background: #0891b2;
+            color: #fff; 
+            padding: 12px 20px; 
+            font-size: 14px;
+            border-bottom: 1px solid #0e7490;
+        }
+        .breadcrumbs a { 
+            color: #fff; 
+            text-decoration: none; 
+            font-weight: 500;
+            opacity: 0.9;
+        }
+        .breadcrumbs a:hover { 
+            opacity: 1; 
+        }
+        
+        .container { 
+            max-width: 1400px; 
+            margin: 0 auto; 
+            padding: 24px; 
+        }
+        
+        h1 {
+            font-size: 28px;
+            font-weight: 600;
+            color: #1e293b;
+            margin: 0 0 8px 0;
+        }
+        
+        .help { 
+            color: #64748b; 
+            margin-bottom: 24px; 
+            font-size: 15px;
+        }
+        
+        .actions { 
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            padding: 16px 20px; 
+            margin-bottom: 20px; 
+            border-radius: 8px;
+        }
+        .selection-counter { 
+            font-weight: 500; 
+            color: #475569;
+            font-size: 15px;
+        }
+        
+        .changelist-search {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .search-label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+            margin-right: 12px;
+        }
+        
+        .changelist-search input[type="text"] {
+            padding: 10px 14px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            width: 300px;
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            background: #fff;
+        }
+        
+        .changelist-search input[type="text"]:focus {
+            outline: none;
+            border-color: #0891b2;
+            box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.1);
+        }
+        
+        .changelist-search input[type="submit"] {
+            background: #0891b2;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            margin-left: 10px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .changelist-search input[type="submit"]:hover { 
+            background: #0e7490;
+        }
+        
+        .changelist-search a { 
+            color: #0891b2; 
+            text-decoration: none; 
+            margin-left: 12px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .changelist-search a:hover {
+            color: #0e7490;
+        }
+        
+        .results { 
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        #result_list { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin: 0;
+        }
+        
+        #result_list th, #result_list td { 
+            padding: 12px 16px; 
+            border-bottom: 1px solid #f1f5f9; 
+            text-align: left; 
+            vertical-align: middle;
+        }
+        
+        #result_list th { 
+            background: #f8fafc;
+            color: #374151; 
+            font-weight: 600; 
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .row1 { background: #fff; }
+        .row2 { background: #f8fafc; }
+        .row1:hover, .row2:hover { 
+            background: #f0f9ff;
+        }
+        
+        .badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 500;
+            color: white;
+            display: inline-block;
+            min-width: 24px;
+            text-align: center;
+        }
+        .badge-primary { 
+            background: #0891b2;
+        }
+        .badge-success { 
+            background: #059669;
+        }
+        .badge-warning { 
+            background: #d97706;
+        }
+        
+        .button {
+            background: #0891b2;
+            color: #fff !important;
+            padding: 8px 16px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 13px;
+            border: none;
+            cursor: pointer;
+            display: inline-block;
+            margin-right: 8px;
+            margin-bottom: 4px;
+            font-weight: 500;
+            font-family: 'Inter', sans-serif;
+            white-space: nowrap;
+        }
+        
+        .button:hover { 
+            background: #0e7490;
+            color: #fff !important;
+        }
+        
+        .button.default { 
+            background: #059669;
+            font-weight: 500;
+        }
+        
+        .button.default:hover { 
+            background: #047857;
+        }
+        
+        .button.secondary {
+            background: #6b7280;
+        }
+        
+        .button.secondary:hover {
+            background: #4b5563;
+        }
+        
+        .text-muted { 
+            color: #9ca3af; 
+            font-style: italic; 
+        }
+        
+        .logo-cell img {
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .sector-name {
+            font-weight: 600;
+            color: #1e293b;
+            font-size: 15px;
+        }
+        
+        .category-name {
+            color: #64748b;
+            font-size: 14px;
+            font-weight: 400;
+        }
+        
+        .no-data {
+            text-align: center;
+            padding: 40px 20px;
+            color: #64748b;
+        }
+        
+        .no-data p {
+            font-size: 15px;
+            margin-bottom: 12px;
+        }
+        
+        .no-data a {
+            color: #0891b2;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .no-data a:hover {
+            color: #0e7490;
+        }
+        
+        .action-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            align-items: center;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 16px;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+            
+            .changelist-search input[type="text"] {
+                width: 100%;
+                margin-bottom: 8px;
+            }
+            
+            .changelist-search input[type="submit"] {
+                margin-left: 0;
+                width: 100%;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .button {
+                margin-right: 0;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Breadcrumbs -->
+    <div class="breadcrumbs">
+        <a href="/admin/">Home</a>
+        › <a href="/admin/accounts/">Accounts</a>
+        › Company Data
+    </div>
+
+    <div class="container">
+        <!-- Header -->
+        <h1>{{ title }}</h1>
+        <p class="help">Search and explore sectors, then click to view all companies within each sector</p>
+
+        <!-- Actions -->
+        <div class="actions">
+            <div class="action-counter">
+                <span class="selection-counter">{{ sectors_with_counts|length }} sector{{ sectors_with_counts|length|pluralize }} available</span>
+            </div>
+        </div>
+
+        <!-- Search -->
+        <div class="changelist-search">
+            <form method="get" style="display: flex; align-items: center; flex-wrap: wrap;">
+                <label for="searchbar" class="search-label">Search Sectors:</label>
+                <input type="text" name="q" value="{{ search_query }}" id="searchbar" 
+                       placeholder="Search by sector name or category..." autofocus>
+                <input type="submit" value="Search">
+                {% if search_query %}
+                    <a href="?">Clear search</a>
+                {% endif %}
+            </form>
+        </div>
+
+        <!-- Results Table -->
+        <div class="results">
+            <table id="result_list">
+                <thead>
+                    <tr>
+                        <th scope="col">Logo</th>
+                        <th scope="col">Sector Name</th>
+                        <th scope="col">Category</th>
+                        <th scope="col">Total Companies</th>
+                        <th scope="col">Registered</th>
+                        <th scope="col">Unregistered</th>
+                        <th scope="col">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sector_data in sectors_with_counts %}
+                    <tr class="{% cycle 'row1' 'row2' %}">
+                        <td class="logo-cell">
+                            {% if sector_data.sector.logo %}
+                                <img src="/media/{{ sector_data.sector.logo.url|cut:'media/' }}" 
+                                    alt="{{ sector_data.sector.sector_name }}" 
+                                    style="width: 40px; height: 40px; object-fit: contain;">
+                            {% else %}
+                                <span class="text-muted">No Logo</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="sector-name">{{ sector_data.sector.sector_name|default:"No Name" }}</span>
+                        </td>
+                        <td>
+                            <span class="category-name">{{ sector_data.sector.category.category_name|default:"No Category" }}</span>
+                        </td>
+                        <td>
+                            <span class="badge badge-primary">{{ sector_data.company_count }}</span>
+                        </td>
+                        <td>
+                            <span class="badge badge-success">{{ sector_data.registered_count }}</span>
+                        </td>
+                        <td>
+                            <span class="badge badge-warning">{{ sector_data.unregistered_count }}</span>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <a href="/admin/accounts/companydata/sector/{{ sector_data.sector.id }}/companies/" 
+                                   class="button default" title="View all companies in {{ sector_data.sector.sector_name }}">
+                                    View Companies
+                                </a>
+                                <a href="/admin/accounts/sector/{{ sector_data.sector.id }}/change/" 
+                                   class="button secondary" title="Edit {{ sector_data.sector.sector_name }} sector">
+                                    Edit Sector
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="no-data">
+                            {% if search_query %}
+                                <p>No sectors found matching "<strong>{{ search_query }}</strong>"</p>
+                                <p><a href="?">View all sectors</a> or try a different search term.</p>
+                            {% else %}
+                                <p>No sectors found.</p>
+                                <p><a href="/admin/accounts/sector/add/">Add a sector</a> to get started.</p>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Welcome to YardSignProShop!</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border: 1px solid #dddddd;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            font-size: 36px;
+            color: #333333;
+        }
+        .header p {
+            font-size: 20px;
+            color: #666666;
+        }
+        .content {
+            font-size: 18px;
+            color: #333333;
+            line-height: 1.6;
+        }
+        .content p {
+            margin: 15px 0;
+        }
+        .footer {
+            text-align: center;
+            font-size: 16px;
+            color: #666666;
+            margin-top: 30px;
+        }
+        .footer p {
+            margin: 5px 0;
+        }
+        a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+
+        /* Additional styles from your second template */
+        h2 {
+            color: #2c3e50;
+        }
+        .highlight {
+            font-weight: bold;
+            color: #3498db;
+        }
+        .invoice-link a {
+            color: #ffffff;
+            text-decoration: none;
+            background-color: #3498db;
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        .invoice-link a:hover {
+            background-color: #2980b9;
+        }
+        .contact-info {
+            margin-top: 20px;
+            font-size: 14px;
+        }
+        .contact-info a {
+            color: #3498db;
+            text-decoration: none;
+        }
+        .contact-info a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Welcome to YardSignProShop</h1>
+            <p>Customer Support Team</p>
+        </div>
+        <div class="content">
+            <h2>Hello {{ user_info }}!</h2>
+            <p>Welcome to <span class="highlight">YardSignProShop</span>.</p>
+            <p>Your subscription to the <strong>{{ plan_name }}</strong> plan has been successfully activated.</p>
+            <p><strong>Start Date:</strong> {{ start_date }}</p>
+            <p><strong>End Date:</strong> {{ end_date }}</p>
+            <p><strong>Amount Paid:</strong> ${{ amount }}</p>
+            <p>You can view your invoice here:</p>
+            <div class="invoice-link">
+                <a href="{{ invoice_url }}" target="_blank">View Invoice</a>
+            </div>
+            
+            <div class="contact-info">
+                <p>Thank you,</p>
+                <p>Customer Service</p>
+                <p><a href="mailto:Contact@YardSignProShop.com">Contact@YardSignProShop.com</a></p>
+                <p><a href="https://yardsignproshop.com/">YardSignProShop.com</a></p>
+            </div>
+        </div>
+        <div class="footer">
+            <p>Customer Support Team</p>
+            <p>Yard Sign Pro Shop</p>
+        </div>
+    </div>
+</body>
+</html>

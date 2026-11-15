@@ -1,0 +1,776 @@
+{% extends "admin/change_list.html" %}
+
+{% block object-tools-items %}
+{{ block.super }}
+
+<!-- Improved layout with proper container structure -->
+<div class="admin-tools-container">
+    <!-- CSV Format Instructions -->
+    <div class="csv-instructions">
+        <h4>CSV Format Requirements</h4>
+        <p><strong>Required columns:</strong> Company Name, Company Website, Company Address</p>
+        <p><strong>Optional columns:</strong> Company Email, Contact Name, Company Phone</p>
+        <p><strong>Note:</strong> Any row missing required fields will be skipped during processing.</p>
+    </div>
+
+    <!-- Button container with fixed width -->
+    <div class="button-wrapper">
+        <button id="uploadCompanyDataButton" class="btn btn-success">
+            <span id="buttonText">Upload Company CSV</span>
+            <span id="uploadingText" style="display: none;">Uploading</span>
+            <div class="loader-container">
+                <div id="loader" class="loader" style="display: none;"></div>
+            </div>
+        </button>
+    </div>
+
+    <!-- Results container now in a separate div below the button -->
+    <div id="resultsContainer" style="display: none;">
+        <h3>Upload Results</h3>
+        <div id="resultsContent"></div>
+    </div>
+
+    <!-- Row processing results -->
+    <div id="rowResultsContainer" style="display: none;">
+        <h3>Row Processing Results</h3>
+        <div class="table-responsive">
+            <table id="rowResultsTable">
+                <thead>
+                    <tr>
+                        <th>Row</th>
+                        <th>Company</th>
+                        <th>Status</th>
+                        <th>Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Results will be added here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Sector selection modal -->
+<div id="sectorModal" class="sector-modal">
+    <div class="sector-modal-content">
+        <span class="close">&times;</span>
+        <h2>Select Sector and Upload CSV</h2>
+        
+        <!-- CSV Format Help Section -->
+        <div class="csv-format-help">
+            <h3>CSV Format Guide</h3>
+            <p>Your CSV file must contain these columns with exact headers:</p>
+            <div class="column-requirements">
+                <div class="required-columns">
+                    <h4>Required Columns:</h4>
+                    <ul>
+                        <li><strong>Company Name</strong> - Name of the company</li>
+                        <li><strong>Company Website</strong> - Company website URL</li>
+                        <li><strong>Company Address</strong> - Full address for geocoding</li>
+                    </ul>
+                </div>
+                <div class="optional-columns">
+                    <h4>Optional Columns:</h4>
+                    <ul>
+                        <li><strong>Company Email</strong> - Contact email address</li>
+                        <li><strong>Contact Name</strong> - Primary contact person</li>
+                        <li><strong>Company Phone</strong> - Contact phone number</li>
+                    </ul>
+                </div>
+            </div>
+            <p class="note"><strong>Important:</strong> Rows with missing required fields will be skipped.</p>
+        </div>
+        
+        <div class="form-group">
+            <label for="sector-select">Choose a sector:</label>
+            <select id="sector-select">
+                {% for sector in sectors %}
+                    <option value="{{ sector.id }}">{{ sector.sector_name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="modal-footer">
+            <button id="selectFileButton" class="btn btn-primary">
+                Select CSV File
+            </button>
+        </div>
+    </div>
+</div>
+
+<input type="file" id="csvFileInput" accept=".csv" style="display:none;" />
+
+{% endblock %}
+
+{% block extrahead %}
+{{ block.super }}
+<style>
+    /* Container for all admin tools */
+    .admin-tools-container {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        gap: 20px;
+    }
+    
+    /* CSV Instructions Styling */
+    .csv-instructions {
+        background-color: #e3f2fd;
+        border: 1px solid #2196f3;
+        border-radius: 4px;
+        padding: 15px;
+        margin-bottom: 15px;
+    }
+    
+    .csv-instructions h4 {
+        margin-top: 0;
+        color: #1976d2;
+        font-size: 16px;
+    }
+    
+    .csv-instructions p {
+        margin: 8px 0;
+        font-size: 14px;
+    }
+    
+    /* CSV Format Help in Modal */
+    .csv-format-help {
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .csv-format-help h3 {
+        margin-top: 0;
+        color: #495057;
+        font-size: 16px;
+    }
+    
+    .column-requirements {
+        display: flex;
+        gap: 20px;
+        margin: 15px 0;
+    }
+    
+    .required-columns, .optional-columns {
+        flex: 1;
+    }
+    
+    .required-columns h4 {
+        color: #dc3545;
+        font-size: 14px;
+        margin-bottom: 8px;
+    }
+    
+    .optional-columns h4 {
+        color: #28a745;
+        font-size: 14px;
+        margin-bottom: 8px;
+    }
+    
+    .column-requirements ul {
+        list-style-type: disc;
+        padding-left: 20px;
+        margin: 0;
+    }
+    
+    .column-requirements li {
+        margin-bottom: 5px;
+        font-size: 13px;
+    }
+    
+    .note {
+        background-color: #fff3cd;
+        border: 1px solid #ffeaa7;
+        border-radius: 3px;
+        padding: 8px;
+        margin-top: 10px;
+        font-size: 13px;
+        color: #856404;
+    }
+    
+    /* Button wrapper to maintain consistent width */
+    .button-wrapper {
+        display: inline-block;
+        margin-bottom: 10px;
+    }
+    
+    /* Improved upload button styles */
+    #uploadCompanyDataButton {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 10px 20px;
+        background-color: #28a745;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        font-size: 15px;
+        cursor: pointer;
+        white-space: nowrap;
+        min-width: 180px;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    #uploadCompanyDataButton:hover {
+        background-color: #00a544;
+    }
+    
+    /* Loader container */
+    .loader-container {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-left: 10px;
+    }
+    
+    /* Improved circular loader styles */
+    .loader {
+        border: 3px solid rgba(255,255,255,0.3);
+        border-top: 3px solid #ffffff;
+        border-radius: 50%;
+        width: 16px;
+        height: 16px;
+        animation: spin 1s linear infinite;
+        display: inline-block;
+        vertical-align: middle;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    /* Results container styles - now full width and clearly separated */
+    #resultsContainer, #rowResultsContainer {
+        width: 100%;
+        margin-top: 10px;
+        padding: 15px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        box-sizing: border-box;
+        background-color: #fff;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    
+    #resultsContainer h3, #rowResultsContainer h3 {
+        margin-top: 0;
+        margin-bottom: 15px;
+        color: #333;
+        font-size: 18px;
+    }
+    
+    /* Success message styling */
+    .success-message {
+        padding: 15px;
+        background-color: #e6ffe6;
+        border-radius: 4px;
+        margin-bottom: 10px;
+        border-left: 4px solid #00c853;
+    }
+    
+    .success-message h4 {
+        margin-top: 0;
+        color: #00a544;
+    }
+    
+    /* Error message styling */
+    .error-message {
+        padding: 15px;
+        background-color: #ffebeb;
+        border-radius: 4px;
+        margin-bottom: 10px;
+        border-left: 4px solid #dc3545;
+    }
+    
+    .error-message h4 {
+        margin-top: 0;
+        color: #dc3545;
+    }
+    
+    /* Warning message styling for duplicates */
+    .warning-message {
+        padding: 15px;
+        background-color: #fff8e1;
+        border-radius: 4px;
+        margin-bottom: 10px;
+        border-left: 4px solid #f57c00;
+    }
+    
+    .warning-message h4 {
+        margin-top: 0;
+        color: #f57c00;
+    }
+    
+    .duplicates-list {
+        margin-top: 10px;
+        max-height: 200px;
+        overflow-y: auto;
+        padding-left: 20px;
+    }
+    
+    .duplicates-list li {
+        margin-bottom: 5px;
+    }
+    
+    /* Add a distinctive color for duplicate status in the table */
+    tr.duplicate-row td {
+        background-color: #fff8e1;
+    }
+    
+    /* Results table styles */
+    #rowResultsTable {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    #rowResultsTable th,
+    #rowResultsTable td {
+        padding: 8px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+    
+    #rowResultsTable th {
+        background-color: #f2f2f2;
+        position: sticky;
+        top: 0;
+    }
+    
+    /* Modal styles */
+    .sector-modal {
+        display: none;
+        position: fixed;
+        z-index: 10000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0,0,0,0.4);
+    }
+    
+    .sector-modal-content {
+        background-color: #fefefe;
+        margin: 10% auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 90%;
+        max-width: 600px;
+        border-radius: 5px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        max-height: 80vh;
+        overflow-y: auto;
+    }
+    
+    /* Form group styles */
+    .form-group {
+        margin-bottom: 15px;
+    }
+    
+    .form-group select {
+        width: 100%;
+        padding: 8px;
+        margin-top: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+    }
+    
+    .modal-footer {
+        margin-top: 20px;
+    }
+    
+    /* Button styles */
+    .btn {
+        padding: 8px 16px;
+        border-radius: 4px;
+        cursor: pointer;
+        border: none;
+    }
+    
+    .btn-primary {
+        background-color: #417690;
+        color: white;
+    }
+    
+    /* Close button style */
+    .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+    
+    .close:hover {
+        color: black;
+        text-decoration: none;
+        cursor: pointer;
+    }
+    
+    /* Toast notification styles */
+    .toast {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background-color: #28a745;
+        color: white;
+        padding: 15px;
+        border-radius: 5px;
+        z-index: 9999;
+        max-width: 90%;
+        box-shadow: 0 0 10px rgba(0,0,0,0.2);
+        animation: fadein 0.5s;
+    }
+    
+    .toast.error {
+        background-color: #dc3545;
+    }
+    
+    @keyframes fadein {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    
+    /* Table responsive wrapper */
+    .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    /* Responsive styles for different screen sizes */
+    @media screen and (max-width: 992px) {
+        #resultsContainer, #rowResultsContainer {
+            padding: 12px;
+        }
+        
+        .column-requirements {
+            flex-direction: column;
+            gap: 15px;
+        }
+    }
+    
+    @media screen and (max-width: 768px) {
+        #uploadCompanyDataButton {
+            padding: 8px 20px;
+            min-width: 160px;
+            font-size: 14px;
+        }
+        
+        .sector-modal-content {
+            width: 95%;
+            margin: 15% auto;
+            padding: 15px;
+        }
+        
+        #rowResultsTable {
+            font-size: 14px;
+        }
+        
+        #rowResultsTable th,
+        #rowResultsTable td {
+            padding: 6px;
+        }
+        
+        .loader {
+            width: 14px;
+            height: 14px;
+            border-width: 2px;
+        }
+        
+        .csv-instructions {
+            padding: 12px;
+        }
+        
+        .csv-format-help {
+            padding: 12px;
+        }
+    }
+    
+    @media screen and (max-width: 480px) {
+        #uploadCompanyDataButton {
+            padding: 8px 15px;
+            min-width: 140px;
+            font-size: 13px;
+        }
+        
+        .sector-modal-content {
+            margin: 20% auto;
+            padding: 12px;
+        }
+        
+        #rowResultsTable {
+            font-size: 12px;
+        }
+        
+        #rowResultsTable th,
+        #rowResultsTable td {
+            padding: 4px;
+        }
+        
+        .toast {
+            padding: 12px;
+            max-width: 85%;
+            right: 10px;
+            bottom: 10px;
+        }
+        
+        .csv-instructions {
+            padding: 10px;
+        }
+        
+        .csv-format-help {
+            padding: 10px;
+        }
+        
+        .column-requirements ul {
+            padding-left: 15px;
+        }
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const uploadButton = document.getElementById('uploadCompanyDataButton');
+        const fileInput = document.getElementById('csvFileInput');
+        const loader = document.getElementById('loader');
+        const uploadingText = document.getElementById('uploadingText');
+        const buttonText = document.getElementById('buttonText');
+        const sectorModal = document.getElementById('sectorModal');
+        const closeModal = document.querySelector('.close');
+        const selectFileButton = document.getElementById('selectFileButton');
+        const sectorSelect = document.getElementById('sector-select');
+        const resultsContainer = document.getElementById('resultsContainer');
+        const resultsContent = document.getElementById('resultsContent');
+        const rowResultsContainer = document.getElementById('rowResultsContainer');
+        const rowResultsTable = document.getElementById('rowResultsTable').getElementsByTagName('tbody')[0];
+        
+        let toastQueue = [];
+        let selectedSectorId = null;
+
+        // Open modal when the upload button is clicked
+        uploadButton.addEventListener('click', function () {
+            sectorModal.style.display = 'block';
+        });
+
+        // Close modal when X is clicked
+        closeModal.addEventListener('click', function() {
+            sectorModal.style.display = 'none';
+        });
+
+        // Close modal when clicking outside
+        window.addEventListener('click', function(event) {
+            if (event.target == sectorModal) {
+                sectorModal.style.display = 'none';
+            }
+        });
+
+        // Select file after sector is chosen
+        selectFileButton.addEventListener('click', function() {
+            selectedSectorId = sectorSelect.value;
+            if (!selectedSectorId) {
+                showToast('Please select a sector', 'error');
+                return;
+            }
+            
+            sectorModal.style.display = 'none';
+            fileInput.click();
+        });
+
+        // Handle file selection
+        fileInput.addEventListener('change', function () {
+            const file = fileInput.files[0];
+            if (file && selectedSectorId) {
+                // Reset previous results
+                resultsContainer.style.display = 'none';
+                rowResultsContainer.style.display = 'none';
+                
+                // Create FormData
+                const formData = new FormData();
+                formData.append('csv_file', file);
+                formData.append('sector', selectedSectorId);
+
+                // Show the loader and uploading text
+                loader.style.display = 'block';
+                uploadingText.style.display = 'inline-block';
+                buttonText.style.display = 'none';
+                uploadButton.disabled = true;
+
+                // Upload the CSV - Using the proper URL with CSRF token
+                fetch('{% url "admin:upload_company_csv" %}', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: formData,
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Show success notification
+                        showToast('CSV file processed successfully!', 'success');
+                        
+                        // Show results
+                        resultsContainer.style.display = 'block';
+                        resultsContent.innerHTML = `
+                            <div class="success-message">
+                                <h4>Success!</h4>
+                                <p>${data.message}</p>
+                            </div>`;
+                        
+                        // If there are duplicates, show them in a separate section
+                        if (data.duplicates && data.duplicates.length > 0) {
+                            resultsContent.innerHTML += `
+                                <div class="warning-message">
+                                    <h4>Duplicates Found</h4>
+                                    <p>The following companies already have yard signs at the specified addresses:</p>
+                                    <ul class="duplicates-list">
+                                        ${data.duplicates.map(dup => 
+                                            `<li><strong>${dup.company}</strong> at address: ${dup.address}</li>`
+                                        ).join('')}
+                                    </ul>
+                                </div>`;
+                        }
+                        
+                        // Show row results if available
+                        if (data.processed_rows && data.processed_rows.length > 0) {
+                            rowResultsContainer.style.display = 'block';
+                            rowResultsTable.innerHTML = ''; // Clear previous results
+                            
+                            data.processed_rows.forEach(row => {
+                                const tr = document.createElement('tr');
+                                
+                                // Add class for duplicate rows for styling
+                                if (row.status === 'duplicate') {
+                                    tr.classList.add('duplicate-row');
+                                }
+                                
+                                // Row number
+                                const tdRow = document.createElement('td');
+                                tdRow.textContent = row.row;
+                                tr.appendChild(tdRow);
+                                
+                                // Company
+                                const tdCompany = document.createElement('td');
+                                tdCompany.textContent = row.company || 'N/A';
+                                tr.appendChild(tdCompany);
+                                
+                                // Status
+                                const tdStatus = document.createElement('td');
+                                
+                                if (row.status === 'success') {
+                                    tdStatus.textContent = '✅ Success';
+                                    tdStatus.style.color = 'green';
+                                } else if (row.status === 'duplicate') {
+                                    tdStatus.textContent = '⚠️ Duplicate';
+                                    tdStatus.style.color = '#f57c00'; // Orange color
+                                } else if (row.status === 'error') {
+                                    tdStatus.textContent = '❌ Error';
+                                    tdStatus.style.color = 'red';
+                                } else {
+                                    tdStatus.textContent = row.status || 'Unknown';
+                                }
+                                tr.appendChild(tdStatus);
+                                
+                                // Details
+                                const tdDetails = document.createElement('td');
+                                
+                                if (row.error) {
+                                    tdDetails.textContent = row.error;
+                                } else if (row.id) {
+                                    tdDetails.textContent = `ID: ${row.id}`;
+                                }
+                                tr.appendChild(tdDetails);
+                                
+                                rowResultsTable.appendChild(tr);
+                            });
+                        }
+                        
+                        // Optional: Reload after 3 seconds if companies were added
+                        if (data.companies_processed > 0) {
+                            setTimeout(() => {
+                                location.reload();
+                            }, 90000);
+                        }
+                    } else {
+                        // Show error notification
+                        showToast(`Error: ${data.message}`, 'error');
+                        
+                        // Show error details
+                        resultsContainer.style.display = 'block';
+                        resultsContent.innerHTML = `
+                            <div class="error-message">
+                                <h4>Error</h4>
+                                <p>${data.message}</p>
+                            </div>`;
+                            
+                        if (data.errors && data.errors.length > 0) {
+                            let errorsList = '<ul>';
+                            data.errors.slice(0, 10).forEach(error => {
+                                errorsList += `<li>${error}</li>`;
+                            });
+                            if (data.errors.length > 10) {
+                                errorsList += `<li>... and ${data.errors.length - 10} more errors</li>`;
+                            }
+                            errorsList += '</ul>';
+                            resultsContent.innerHTML += errorsList;
+                        }
+                    }
+                })
+                .catch(error => {
+                    showToast(`An unexpected error occurred: ${error.message}`, 'error');
+                    
+                    // Show error in results container
+                    resultsContainer.style.display = 'block';
+                    resultsContent.innerHTML = `
+                        <div class="error-message">
+                            <h4>Error</h4>
+                            <p>An unexpected error occurred: ${error.message}</p>
+                        </div>`;
+                })
+                .finally(() => {
+                    // Reset UI
+                    loader.style.display = 'none';
+                    uploadingText.style.display = 'none';
+                    buttonText.style.display = 'block';
+                    uploadButton.disabled = false;
+                    fileInput.value = ''; // Reset file input
+                });
+            }
+        });
+
+        // Function to show toast notification
+        function showToast(message, type) {
+            const toast = document.createElement('div');
+            toast.classList.add('toast');
+            if (type === 'error') {
+                toast.classList.add('error');
+            }
+            toast.innerText = message;
+
+            const offset = toastQueue.length * 60;
+            toast.style.bottom = `${20 + offset}px`;
+
+            toastQueue.push(toast);
+            document.body.appendChild(toast);
+
+            // Remove toast after 5 seconds
+            setTimeout(() => {
+                document.body.removeChild(toast);
+                toastQueue = toastQueue.filter(t => t !== toast);
+                adjustToastPositions();
+            }, 90000);
+        }
+
+        // Adjust positions of toast notifications in queue
+        function adjustToastPositions() {
+            toastQueue.forEach((toast, index) => {
+                toast.style.bottom = `${20 + index * 60}px`;
+            });
+        }
+    });
+</script>
+{% endblock %}

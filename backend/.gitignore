@@ -1,0 +1,12 @@
+/.idea/.gitignore
+/env/*
+*.js.gz
+/staticfiles/*
+/.idea/*
+/project/__pycache__/*
+/accounts/__pycache__/*
+/__pycache__/*
+nohup.out
+/venv/*
+*.pyc
+node_modules/
